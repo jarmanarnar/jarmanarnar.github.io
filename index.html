@@ -15,21 +15,19 @@
             font-size: 16px;
             line-height: 1.5;
             overflow-x: hidden;
-            /* מעבר חלק בשינוי כיוון שפה */
             transition: all 0.3s ease;
         }
 
         #terminal {
             max-width: 800px;
             margin: 0 auto;
+            padding-bottom: 100px;
         }
 
         a { text-decoration: none; color: inherit; }
 
-        /* --- אלמנטים של הטרמינל --- */
         p { margin: 5px 0; }
         
-        /* מחלקות עזר לכיווניות */
         .ltr { direction: ltr; text-align: left; }
         .rtl { direction: rtl; text-align: right; }
 
@@ -51,7 +49,7 @@
             margin-top: 50px;
             border: 1px solid #33ff33;
             padding: 20px;
-            display: none; /* יופיע רק אחרי טעינה ראשונית */
+            display: none;
             text-align: center;
         }
 
@@ -72,7 +70,7 @@
             font-weight: bold;
         }
 
-        /* --- האזור הראשי (יוסתר עד לבחירה) --- */
+        /* --- האזור הראשי --- */
         #main-interface {
             display: none;
         }
@@ -96,6 +94,39 @@
             opacity: 0.8;
         }
 
+        /* --- אזור צ'אט AI --- */
+        #ai-interface {
+            display: none;
+            margin-top: 20px;
+            border-top: 2px solid #33ff33;
+            padding-top: 20px;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .user-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            margin: 0 10px;
+        }
+
+        .ai-msg { color: #ccffcc; margin-bottom: 15px; white-space: pre-wrap; }
+        .user-msg { color: #aaaaaa; margin-bottom: 5px; font-weight: bold; }
+        
+        .loading-spinner::after {
+            content: " [PROCESSING...]";
+            animation: blink 0.5s infinite;
+        }
+
     </style>
 </head>
 <body>
@@ -113,7 +144,7 @@
             </div>
         </div>
 
-        <!-- שלב 2: הממשק הראשי (נטען דינמית) -->
+        <!-- שלב 2: הממשק הראשי -->
         <div id="main-interface">
             <div id="boot-log"></div>
             
@@ -126,16 +157,29 @@
                 <div id="menu-title" style="color:white; margin-bottom:15px; text-decoration: underline;"></div>
                 <div id="commands-list"></div>
             </div>
+
+            <!-- אזור האינטראקציה עם ה-AI -->
+            <div id="ai-interface">
+                <div id="chat-history"></div>
+                <div class="input-line">
+                    <span id="ai-prompt-label" style="color:#33ff33;">AI@CORE:~$</span>
+                    <input type="text" id="ai-user-input" class="user-input" autocomplete="off" placeholder="_">
+                </div>
+            </div>
         </div>
 
     </div>
 
     <script>
-        // --- DATA OBJECTS: התוכן לכל שפה ---
+        const apiKey = ""; // API Key handled by environment
+        let currentLang = 'en';
+
+        // --- DATA OBJECTS ---
         const content = {
             en: {
                 dir: 'ltr',
                 prompt: 'root@alex-lab:~#',
+                aiPrompt: 'GUEST@CORE:~$',
                 bootLines: [
                     "Loading kernel modules...",
                     "Mounting /home/alex...",
@@ -144,17 +188,19 @@
                     "System Ready."
                 ],
                 menuTitle: "AVAILABLE MODULES:",
+                aiWelcome: "AI UPLINK ESTABLISHED. I am Alex's Automated Assistant Kernel. How can I help you?",
                 commands: [
+                    { id: 'AI',    text: "INIT_AI_UPLINK ✨", comment: "// Chat with System Core" },
                     { id: 'ALPHA', text: "RUN PROJECT_ALPHA", comment: "// AI Interface Experiments" },
                     { id: 'TRADE', text: "EXECUTE TRADING_BOT", comment: "// Algorithmic Finance" },
                     { id: 'RPG',   text: "ACCESS DUNGEON_DB", comment: "// RPG Knowledge Base" },
-                    { id: 'BLOG',  text: "DECRYPT PHILOSOPHY", comment: "// Logic & Ethics Log" },
-                    { id: 'MAIL',  text: "SEND_SIGNAL (CONTACT)", comment: "// Secure Channel" }
+                    { id: 'BLOG',  text: "DECRYPT PHILOSOPHY", comment: "// Logic & Ethics Log" }
                 ]
             },
             he: {
                 dir: 'rtl',
                 prompt: 'root@alex-il:~#',
+                aiPrompt: 'GUEST@CORE:~$',
                 bootLines: [
                     "טוען ליבת מערכת...",
                     "מבצע עגן לכונן משתמש: אלכס...",
@@ -163,26 +209,25 @@
                     "המערכת מוכנה לשימוש."
                 ],
                 menuTitle: "מודולים זמינים למשתמש:",
+                aiWelcome: "ערוץ AI מאובטח הושלם. אני ליבת המערכת האוטומטית של אלכס. כיצד ניתן לסייע?",
                 commands: [
+                    { id: 'AI',    text: "אתחול ערוץ AI ✨", comment: "// שוחח עם ליבת המערכת" },
                     { id: 'ALPHA', text: "הרץ את PROJECT_ALPHA", comment: "// ניסויים בבינה מלאכותית" },
                     { id: 'TRADE', text: "פתח מסוף TRADING_BOT", comment: "// אלגוריתמים לפיננסים" },
                     { id: 'RPG',   text: "גישה לארכיון DUNGEON_DB", comment: "// מאגר ידע למשחקי תפקידים" },
-                    { id: 'BLOG',  text: "פענוח יומן אישי", comment: "// מחשבות על קוד ואתיקה" },
-                    { id: 'MAIL',  text: "שדר אות מוצפן (צור קשר)", comment: "// ערוץ תקשורת מאובטח" }
+                    { id: 'BLOG',  text: "פענוח יומן אישי", comment: "// מחשבות על קוד ואתיקה" }
                 ]
             }
         };
 
-        // --- STEP 1: BIOS & LANGUAGE SELECTION ---
+        // --- BIOS & INIT ---
         
         const biosLog = document.getElementById('bios-log');
         const langSelect = document.getElementById('lang-selection');
-        
-        // טקסטים שרצים ממש בהתחלה לפני הבחירה
         const biosLines = [
             "> BIOS CHECK MEMORY... OK",
             "> CPU 0... OK",
-            "> DETECTING USER INPUT DEVICES...",
+            "> DETECTING NEURAL ENGINE... OK", 
             "> WAITING FOR INPUT..."
         ];
 
@@ -196,32 +241,23 @@
                 biosIndex++;
                 setTimeout(runBios, 200);
             } else {
-                // מציג את מסך הבחירה
                 langSelect.style.display = 'block';
             }
         }
-
-        // מתחיל את ה-BIOS
         setTimeout(runBios, 500);
 
-
-        // --- STEP 2: HANDLE SELECTION & MAIN BOOT ---
-
         function selectLanguage(lang) {
-            // 1. הסתרת מסך ה-BIOS
+            currentLang = lang;
             document.getElementById('bios-screen').style.display = 'none';
             
-            // 2. הגדרת כיוון ושפה ל-HTML
             const selectedData = content[lang];
             document.documentElement.lang = lang;
             document.documentElement.dir = selectedData.dir;
             document.body.style.textAlign = lang === 'he' ? 'right' : 'left';
 
-            // 3. הצגת הממשק הראשי
             const mainInterface = document.getElementById('main-interface');
             mainInterface.style.display = 'block';
 
-            // 4. הרצת הבוט הראשי (Boot Sequence) עם השפה הנבחרת
             runMainBoot(selectedData);
         }
 
@@ -230,9 +266,7 @@
             const activeLine = document.getElementById('active-line');
             const promptLabel = document.getElementById('prompt-label');
             
-            // עדכון הפרומפט הקבוע למטה
             promptLabel.textContent = data.prompt;
-            // אם עברית, נוודא שהפרומפט (שהוא באנגלית) יוצג משמאל לימין בתוך הטקסט
             if(data.dir === 'rtl') {
                 promptLabel.style.direction = 'ltr'; 
                 promptLabel.style.unicodeBidi = 'embed';
@@ -242,26 +276,19 @@
             }
 
             let lineIdx = 0;
-            
             function printLine() {
                 if (lineIdx < data.bootLines.length) {
                     const p = document.createElement('p');
-                    
-                    // עיצוב שונה לפרומפט בכל שורה בלוג
                     const promptSpan = `<span style="color:#555; direction:ltr; unicode-bidi:embed;">></span>`;
                     p.innerHTML = promptSpan + " " + data.bootLines[lineIdx];
-                    
                     bootLog.appendChild(p);
                     window.scrollTo(0, document.body.scrollHeight);
-                    
                     lineIdx++;
                     setTimeout(printLine, Math.random() * 300 + 100);
                 } else {
-                    // סיום הבוט - הצגת התפריט
                     showMenu(data);
                 }
             }
-            
             printLine();
         }
 
@@ -271,24 +298,136 @@
             const commandsMenu = document.getElementById('commands-menu');
 
             menuTitle.textContent = data.menuTitle;
+            commandsList.innerHTML = '';
 
-            // בניית הכפתורים דינמית לפי השפה
             data.commands.forEach(cmd => {
                 const link = document.createElement('a');
                 link.className = 'command-row';
-                link.onclick = () => alert(cmd.text + " - Coming Soon!"); // כאן תהיה הפונקציונליות האמיתית
+                link.onclick = () => executeCommand(cmd);
                 
-                // הוספת הערה (Comment)
-                // אם עברית, ההערה בצד שמאל, אם אנגלית בצד ימין
                 const commentSpan = `<span class="comment" style="float:${data.dir === 'rtl' ? 'left' : 'right'}">${cmd.comment}</span>`;
-                
                 link.innerHTML = `${cmd.text} ${commentSpan}`;
                 commandsList.appendChild(link);
             });
 
-            // חשיפת התפריט
             commandsMenu.style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        // --- COMMAND EXECUTION ---
+
+        function executeCommand(cmd) {
+            if (cmd.id === 'AI') {
+                activateAI();
+            } else {
+                alert(`${cmd.text} - System functionality simulation. (Select AI for live demo)`);
+            }
+        }
+
+        // --- AI LOGIC ---
+
+        function activateAI() {
+            const aiInterface = document.getElementById('ai-interface');
+            const commandsMenu = document.getElementById('commands-menu');
+            const data = content[currentLang];
+
+            // Hide menu, show AI
+            commandsMenu.style.display = 'none';
+            aiInterface.style.display = 'block';
+            
+            // Set input prompt direction
+            const aiPromptLabel = document.getElementById('ai-prompt-label');
+            aiPromptLabel.textContent = data.aiPrompt;
+            if (currentLang === 'he') {
+                aiPromptLabel.style.direction = 'ltr';
+                aiPromptLabel.style.unicodeBidi = 'embed';
+            }
+
+            // Welcome message
+            addAIMessage(data.aiWelcome);
+
+            // Focus input
+            const input = document.getElementById('ai-user-input');
+            input.focus();
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    handleUserQuery(this.value);
+                    this.value = '';
+                }
+            });
+        }
+
+        async function handleUserQuery(query) {
+            if (!query.trim()) return;
+
+            // Add user message to log
+            const chatHistory = document.getElementById('chat-history');
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-msg';
+            userDiv.textContent = `> ${query}`;
+            chatHistory.appendChild(userDiv);
+
+            // Add loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'ai-msg loading-spinner';
+            loadingDiv.textContent = "CORE_SYSTEM";
+            chatHistory.appendChild(loadingDiv);
+            window.scrollTo(0, document.body.scrollHeight);
+
+            try {
+                // Determine prompt based on language
+                const sysPrompt = currentLang === 'he' 
+                    ? "אתה מערכת ההפעלה של אתר הפורטפוליו של אלכס. שמך הוא AlexOS. ענה בקצרה, בטון טכנולוגי/סייברפאנק, אך מנומס ועוזר. השתמש במושגים טכניים מדי פעם."
+                    : "You are the operating system of Alex's portfolio website. Your name is AlexOS. Answer briefly, in a tech/cyberpunk tone, but be helpful and polite. Use technical jargon occasionally.";
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: query }] }],
+                        systemInstruction: { parts: [{ text: sysPrompt }] }
+                    })
+                });
+
+                const data = await response.json();
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "System Error: Connection severed.";
+
+                // Remove loading, type out response
+                chatHistory.removeChild(loadingDiv);
+                typeWriterResponse(aiText);
+
+            } catch (error) {
+                chatHistory.removeChild(loadingDiv);
+                addAIMessage("CRITICAL ERROR: Uplink failed. Check console.");
+                console.error(error);
+            }
+        }
+
+        function addAIMessage(text) {
+            const chatHistory = document.getElementById('chat-history');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'ai-msg';
+            msgDiv.textContent = text;
+            chatHistory.appendChild(msgDiv);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function typeWriterResponse(text) {
+            const chatHistory = document.getElementById('chat-history');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'ai-msg';
+            chatHistory.appendChild(msgDiv);
+
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    msgDiv.textContent += text.charAt(i);
+                    i++;
+                    window.scrollTo(0, document.body.scrollHeight);
+                    setTimeout(type, 15); // Typing speed
+                }
+            }
+            type();
         }
 
     </script>
