@@ -3,127 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>הפרויקטים שלי</title>
+    <title>הפורטפוליו שלי</title>
     <style>
-        /* הגדרות כלליות לעיצוב */
+        /* --- הגדרות בסיס --- */
         body {
-            background-color: #121212; /* רקע כהה */
-            color: #e0e0e0; /* טקסט בהיר */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* כותרת ראשית */
-        header {
-            margin-top: 60px;
+            background-color: #121212; /* רקע שחור כמעט מלא */
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            margin-bottom: 40px;
         }
 
-        h1 {
-            font-size: 3rem;
+        /* --- סרגל ניווט עליון (Navbar) --- */
+        nav {
+            display: flex;
+            justify-content: space-between; /* מרווח בין הלוגו לקישורים */
+            align-items: center;
+            padding: 15px 40px;
+            background-color: rgba(18, 18, 18, 0.95); /* חצי שקוף */
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            color: #aaa;
+            text-decoration: none;
+            margin-right: 20px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #4ade80; /* ירוק במעבר עכבר */
+        }
+
+        /* --- כותרת ראשית (Hero) --- */
+        .hero {
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
             margin: 0;
-            background: linear-gradient(45deg, #ff6b6b, #feca57); /* צבע מדורג */
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
         }
 
-        p.subtitle {
+        .hero span {
+            color: #4ade80; /* הצבע הירוק מהתמונה ששלחת */
+        }
+
+        .hero p {
             font-size: 1.2rem;
             color: #a0a0a0;
-            margin-top: 10px;
+            margin-top: 15px;
+            margin-bottom: 30px;
         }
 
-        /* רשת הכרטיסיות */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            width: 90%;
-            max-width: 1000px;
-            padding-bottom: 40px;
-        }
-
-        /* עיצוב כרטיסייה */
-        .card {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 20px;
+        .btn-primary {
+            background-color: #2563eb; /* כחול */
+            color: white;
+            padding: 12px 30px;
+            border-radius: 6px;
             text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 150px;
-        }
-
-        .card:hover {
-            transform: translateY(-5px); /* תזוזה למעלה במעבר עכבר */
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            border-color: #feca57;
-        }
-
-        .card h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .card p {
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        .card .status {
-            font-size: 0.8rem;
             font-weight: bold;
-            color: #4caf50; /* ירוק */
-            align-self: flex-end;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* --- אזור כרטיסיות --- */
+        .section-title {
+            margin-top: 60px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card-container {
+            display: flex;
+            justify-content: center;
+            padding-bottom: 60px;
+        }
+
+        /* העיצוב של "כרטיסייה" כמו בתמונה */
+        .card {
+            background-color: #f0f2f5; /* רקע בהיר לכרטיסייה עצמה */
+            color: #333; /* טקסט כהה בתוך הכרטיסייה */
+            width: 90%;
+            max-width: 800px;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .card img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
         }
         
-        .card .status.wip {
-            color: #ff9800; /* כתום */
+        .card h3 {
+            margin-top: 0;
+            font-size: 2rem;
         }
 
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>הפרויקטים שלי</h1>
-        <p class="subtitle">אזור הניסויים, הקוד והיצירה.</p>
-    </header>
+    <nav>
+        <a href="#" class="nav-logo">AlexDesign</a> <div class="nav-links">
+            <a href="#">בית</a>
+            <a href="#">פרויקטים</a>
+            <a href="#">אודות</a>
+            <a href="#">צור קשר</a>
+        </div>
+    </nav>
 
-    <div class="grid-container">
-        <a href="#" class="card">
-            <div>
-                <h2>פרויקט ראשון</h2>
-                <p>כאן יהיה הסבר קצר על הפרויקט המגניב שנבנה בקרוב.</p>
-            </div>
-            <span class="status wip">בבנייה...</span>
-        </a>
+    <div class="hero">
+        <h1>career <span>dreamer</span></h1>
+        <p>דרך משחקית לחקור אפשרויות קריירה עם AI</p>
+        <a href="#" class="btn-primary">התחל עכשיו</a>
+    </div>
 
-        <a href="#" class="card">
-            <div>
-                <h2>גלריית תמונות</h2>
-                <p>אזור שמציג תמונות או עיצובים בצורה דינמית.</p>
+    <div class="section-title">1. עצב את הסיפור שלך</div>
+    <div class="card-container">
+        <div class="card">
+            <h3>הכרטיסייה הראשונה שלי</h3>
+            <p>כאן תוכל לשים תמונת מסך של האפליקציה או הסבר על הפרויקט.</p>
+            <div style="background:#ddd; height:200px; margin-top:20px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666;">
+                מקום לתמונה
             </div>
-            <span class="status wip">בקרוב</span>
-        </a>
+        </div>
+    </div>
 
-        <a href="#" class="card">
-            <div>
-                <h2>משחקון</h2>
-                <p>ניסוי ב-JavaScript אינטראקטיבי.</p>
+    <div class="section-title">2. חקור אפשרויות</div>
+    <div class="card-container">
+        <div class="card">
+            <h3>עוד פרויקט מעניין</h3>
+            <p>בדיוק כמו בתמונה ששלחת, הכרטיסיות האלו בולטות על הרקע השחור.</p>
+             <div style="background:#ddd; height:200px; margin-top:20px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666;">
+                מקום לתמונה או גרף
             </div>
-            <span class="status wip">מתוכנן</span>
-        </a>
+        </div>
     </div>
 
 </body>
