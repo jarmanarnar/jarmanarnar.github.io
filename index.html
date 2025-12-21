@@ -7,93 +7,62 @@
     <style>
         /* --- בסיס --- */
         body {
-            background-color: #121212; /* קצת יותר בהיר משחור מוחלט לקונטרסט במובייל */
+            background-color: #0d0d0d;
             color: #33ff33;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             margin: 0;
-            padding: 0; /* איפוס ריפוד */
-            font-size: 16px; /* גודל בסיס קריא */
+            padding: 0;
+            font-size: 16px;
+            height: 100vh;
+            overflow: hidden; /* הגלילה תהיה רק בתוך הקונטיינר */
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden; /* מניעת גלילה כפולה */
         }
 
-        /* --- אזור התוכן הנגלל --- */
-        #terminal-output {
+        /* --- אזור התוכן הראשי --- */
+        #terminal-container {
             flex: 1;
+            padding: 20px;
+            padding-bottom: 50px; /* רווח נשימה למטה */
             overflow-y: auto;
-            padding: 15px;
-            padding-bottom: 100px; /* רווח מלמטה כדי שהתוכן לא יוסתר ע"י המקלדת */
             scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch; /* גלילה חלקה ב-iOS */
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* הצמדה לימין */
         }
 
         /* שורות טקסט */
         .line {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             white-space: pre-wrap;
-            line-height: 1.5;
-            word-break: break-word; /* מונע גלישה אופקית במובייל */
+            line-height: 1.6;
+            width: 100%;
+            word-break: break-word;
+            opacity: 0; /* לאנימציית הופעה */
+            animation: fadeIn 0.3s forwards;
         }
 
-        /* --- אזור השליטה התחתון (קבוע) --- */
-        #control-panel {
-            background-color: #1a1a1a;
-            border-top: 1px solid #333;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            position: relative;
-            z-index: 100;
-        }
+        @keyframes fadeIn { to { opacity: 1; } }
 
-        /* סרגל הצעות (כפתורים מהירים) */
-        #quick-actions {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto; /* גלילה אופקית אם יש הרבה כפתורים */
-            padding-bottom: 5px;
-            -ms-overflow-style: none;  /* הסתרת פס גלילה */
-            scrollbar-width: none;  /* הסתרת פס גלילה */
-        }
-        #quick-actions::-webkit-scrollbar { display: none; }
-
-        .action-btn {
-            background: rgba(51, 255, 51, 0.1);
-            border: 1px solid #33ff33;
-            color: #33ff33;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 14px;
-            white-space: nowrap;
-            cursor: pointer;
-            flex-shrink: 0; /* מונע כיווץ */
-        }
-        .action-btn:active {
-            background: #33ff33;
-            color: #000;
-        }
-
-        /* שורת הקלט האמיתית */
-        .input-wrapper {
+        /* --- שורת הקלט הפעילה (בתוך הזרימה) --- */
+        #active-prompt {
             display: flex;
             align-items: center;
-            background: #000;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 5px 10px;
+            width: 100%;
+            margin-top: 10px;
+            opacity: 0; /* מוסתר עד סוף האתחול */
+            transition: opacity 0.5s;
         }
 
         .prompt-sign {
             color: #33ff33;
-            margin-left: 10px;
             font-weight: bold;
-            flex-shrink: 0;
+            margin-left: 10px;
+            white-space: nowrap;
         }
 
+        /* שדה הקלט השקוף - נראה כמו חלק מהטקסט */
         #cmd-input {
             background: transparent;
             border: none;
@@ -102,125 +71,134 @@
             font-size: 16px;
             flex: 1;
             outline: none;
-            padding: 5px 0;
+            padding: 0;
+            margin: 0;
         }
 
-        /* כפתור "שלח" (חץ) למובייל */
-        #send-btn {
-            background: transparent;
-            border: none;
-            color: #33ff33;
-            font-size: 20px;
-            padding: 0 5px;
-            cursor: pointer;
-        }
-
-        /* --- עיצוב הודעות --- */
-        .system-msg { color: #888; font-style: italic; font-size: 0.9em; margin-top: 5px;}
+        /* --- אלמנטים ויזואליים --- */
+        .system-msg { color: #888; font-style: italic; font-size: 0.9em; }
         .highlight { color: #ffff33; }
         .error { color: #ff5555; }
-        .cmd-echo { color: #fff; font-weight: bold; margin-top: 15px; } /* הפקודה שהמשתמש כתב */
         
+        /* כרטיסיות מידע מעוצבות */
         .project-card {
-            border-right: 3px solid #33ff33;
+            border-right: 2px solid #33ff33;
             padding-right: 15px;
-            margin: 10px 0;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
+            background: linear-gradient(90deg, rgba(51, 255, 51, 0.05) 0%, transparent 100%);
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 4px;
         }
 
-        .link-text {
-            text-decoration: underline;
+        /* תפריט רשימה */
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .menu-item {
             cursor: pointer;
             color: #33ff33;
+            transition: padding-right 0.2s, color 0.2s;
+            display: inline-block;
+            width: fit-content;
         }
+
+        .menu-item:hover {
+            color: #fff;
+            padding-right: 10px;
+            text-shadow: 0 0 8px rgba(51, 255, 51, 0.6);
+        }
+        
+        .menu-item::before { content: "● "; color: #555; font-size: 0.8em;}
+
+        /* סמן מהבהב מותאם אישית (אם רוצים) */
+        .caret {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background: #33ff33;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-right: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
     </style>
 </head>
-<body>
+<body onclick="focusInput()">
 
-    <!-- אזור הפלט הראשי -->
-    <div id="terminal-output">
+    <div id="terminal-container">
         <div id="history"></div>
-    </div>
-
-    <!-- פאנל שליטה תחתון -->
-    <div id="control-panel">
         
-        <!-- כפתורים מהירים -->
-        <div id="quick-actions">
-            <button class="action-btn" onclick="runCmd('פרויקטים')">פרויקטים</button>
-            <button class="action-btn" onclick="runCmd('אודות')">אודות</button>
-            <button class="action-btn" onclick="runCmd('כישורים')">כישורים</button>
-            <button class="action-btn" onclick="runCmd('צור_קשר')">צור קשר</button>
-            <button class="action-btn" onclick="runCmd('נקה')" style="border-color:#555; color:#777;">נקה</button>
-        </div>
-
-        <!-- שורת הקלט -->
-        <div class="input-wrapper">
-            <span class="prompt-sign">~</span>
-            <input type="text" id="cmd-input" placeholder="הקלד פקודה..." autocomplete="off">
-            <button id="send-btn" onclick="handleSend()">↵</button>
+        <!-- שורת הקלט הדינמית - תמיד בסוף השיחה -->
+        <div id="active-prompt">
+            <span class="prompt-sign">אלכס_AI:~ </span>
+            <input type="text" id="cmd-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>
     </div>
 
     <script>
         const historyDiv = document.getElementById('history');
-        const outputContainer = document.getElementById('terminal-output');
+        const container = document.getElementById('terminal-container');
+        const inputLine = document.getElementById('active-prompt');
         const inputField = document.getElementById('cmd-input');
 
         // תוכן המערכת
         const fileSystem = {
-            'אודות': `שמי אלכס ריבקין, מעצב UX/UI.
-אני מתמחה בחיבור בין צרכי משתמש לעיצוב נקי ופונקציונלי.
-רקע: תואר שני בפילוסופיה (שעוזר לי לשאול את השאלות הנכונות).`,
+            'אודות': `שמי אלכס ריבקין.
+אני חוקר את המפגש שבין פילוסופיה לטכנולוגיה, ומתרגם את זה לממשקי משתמש (UX/UI).
+אני מאמין שקוד הוא שפה, ועיצוב הוא המסר.`,
 
-            'כישורים': `יכולות מרכזיות:
-- UX Research & Strategy
-- UI Design (Figma, Sketch)
-- Prototyping (Protopie)
-- HTML/CSS Basics`,
+            'כישורים': `ארגז הכלים שלי:
+• אסטרטגיית מוצר (Product Strategy)
+• עיצוב ממשקים (Figma Mastery)
+• בניית אבות-טיפוס (Prototyping)
+• פיתוח Front-End בסיסי`,
 
-            'פרויקטים': `תיק עבודות:
+            'פרויקטים': `תיק עבודות נבחר:
 
 1. פרויקט_אלפא
-   אפיון מחדש למערכת CRM מורכבת.
+   טרנספורמציה דיגיטלית למערכת CRM ארגונית.
    
 2. בוט_מסחר
-   עיצוב דשבורד למערכת פיננסית.
+   ממשק כהה למסחר אלגוריתמי בזמן אמת.
 
 3. מאגר_ידע
-   אפליקציית מובייל לקהילת D&D.
+   חווית מובייל לשחקני D&D.
 
-* הקלד (או לחץ על) שם פרויקט לפרטים.`,
+* הקלד או לחץ על שם פרויקט לצפייה.`,
 
-            'צור_קשר': `בוא נדבר:
+            'צור_קשר': `ערוצי תקשורת:
 מייל: alex@example.com
-לינקדאין: linkedin.com/in/alex`,
+לינקדאין: /in/alex-rivkin`,
 
+            // פירוט פרויקטים
             'פרויקט_אלפא': `<div class="project-card">
-<strong>פרויקט אלפא (CRM Redesign)</strong>
-המטרה: פישוט תהליך קליטת לקוח.
-התוצאה: ירידה של 40% בזמן העבודה של הנציגים.
-כלים: Figma.
+<h3>פרויקט אלפא</h3>
+<p>איך גורמים למערכת מורכבת להרגיש פשוטה?</p>
+<p>בפרויקט זה הובלתי תהליך אפיון מחדש, תוך הפחתת העומס הקוגניטיבי על המשתמש ב-40%.</p>
+<span class="system-msg">// כלים: Figma, Axure</span>
 </div>`,
 
             'בוט_מסחר': `<div class="project-card">
-<strong>בוט מסחר (UI Dashboard)</strong>
-עיצוב ממשק כהה (Dark Mode) לניטור נתונים בזמן אמת.
-דגש על היררכיה ויזואלית וקריאות מהירה.
+<h3>בוט מסחר (UI)</h3>
+<p>עיצוב המבוסס על עקרונות "Data Visualization".</p>
+<p>יצרתי שפה ויזואלית שמשדרת אמינות ומהירות, עם דגש על מצב לילה (Dark Mode) לעבודה ממושכת.</p>
 </div>`,
 
             'מאגר_ידע': `<div class="project-card">
-<strong>מאגר ידע (D&D App)</strong>
-עיצוב Mobile-First לאפליקציית עזר למשחקים.
-כולל מחקר משתמשים בקרב קהילות שחקנים.
+<h3>מאגר ידע (App)</h3>
+<p>אפליקציית עזר למשחקי תפקידים.</p>
+<p>האתגר: הצגת מידע רב על מסך קטן מבלי לפגוע בחווית המשחק.</p>
 </div>`,
 
-            'נקה': 'CLEAR_SCREEN',
-            'עזרה': 'נסה ללחוץ על הכפתורים למטה.'
+            'עזרה': 'פקודות: פרויקטים, אודות, כישורים, צור_קשר',
+            'נקה': 'CLS'
         };
 
-        // מילים נרדפות
         const aliases = {
             'projects': 'פרויקטים',
             'about': 'אודות',
@@ -229,74 +207,98 @@
             'clear': 'נקה'
         };
 
-        // פונקציה להוספת שורה ללוג
-        function print(html, type = 'line') {
+        // פונקציית כתיבה "חלקה" - מוסיפה ללוג
+        function print(html, className = 'line') {
             const div = document.createElement('div');
-            div.className = type;
+            div.className = className;
             div.innerHTML = html;
             historyDiv.appendChild(div);
             scrollToBottom();
         }
 
+        // גלילה חכמה למטה
         function scrollToBottom() {
-            outputContainer.scrollTop = outputContainer.scrollHeight;
+            // נותן לדפדפן רגע לרנדר ואז גולל
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 10);
         }
 
-        // אתחול
+        // שמירה על הפוקוס
+        function focusInput() {
+            // במובייל אנחנו רוצים להיזהר לא להקפיץ מקלדת סתם
+            // אבל בדסקטופ זה חובה
+            inputField.focus();
+        }
+
+        // --- מנוע האתחול ---
         async function boot() {
             const lines = [
-                "אלכס ריבקין / UX/UI Designer",
-                "טוען פרופיל משתמש...",
-                "השכלה: MA Philosophy",
+                "מאתחל פרופיל: אלכס ריבקין",
+                "טוען מודולים: UX, UI, Philosophy...",
                 "המערכת מוכנה."
             ];
 
             for (let line of lines) {
-                print(`<span style="color:#559955">></span> ${line}`);
-                await new Promise(r => setTimeout(r, 300));
+                print(`<span style="color:#555">></span> ${line}`);
+                await new Promise(r => setTimeout(r, 400));
             }
-            
-            print("<div class='system-msg'>השתמש בכפתורים למטה לניווט מהיר</div>");
+
+            // הצגת התפריט כחלק מהשיחה
+            const menu = `
+            <div class="menu-list">
+                <div style="margin-bottom:8px; color:#fff">בחר נושא להתחלה:</div>
+                <span class="menu-item" onclick="runCmd('פרויקטים')">פרויקטים</span>
+                <span class="menu-item" onclick="runCmd('אודות')">אודות</span>
+                <span class="menu-item" onclick="runCmd('כישורים')">כישורים</span>
+                <span class="menu-item" onclick="runCmd('צור_קשר')">צור קשר</span>
+            </div>
+            `;
+            print(menu);
+
+            // הצגת שורת הקלט בסוף
+            inputLine.style.opacity = '1';
+            focusInput();
         }
 
-        // הרצת פקודה
-        function runCmd(cmdName) {
-            // ניקוי קלט
-            inputField.value = '';
-            inputField.focus();
-
-            const rawCmd = cmdName.trim();
+        // --- טיפול בפקודות ---
+        function runCmd(cmdText) {
+            const rawCmd = cmdText.trim();
             if (!rawCmd) return;
 
-            // עיבוד
-            const cmdKey = rawCmd.toLowerCase().replace(' ', '_');
-            const finalCmd = aliases[cmdKey] || cmdKey;
+            // 1. הפיכת הפקודה הנוכחית לטקסט סטטי בהיסטוריה
+            // זה נותן תחושה שהקלט הפך לחלק מהלוג
+            print(`<span class="prompt-sign">אלכס_AI:~ </span> ${rawCmd}`, 'line');
+            
+            // ניקוי הקלט האמיתי
+            inputField.value = '';
 
-            // טיפול ב"נקה"
-            if (finalCmd === 'נקה' || finalCmd === 'clear_screen') {
+            // 2. עיבוד
+            const key = rawCmd.toLowerCase().replace(' ', '_');
+            const finalCmd = aliases[key] || key;
+
+            if (finalCmd === 'נקה') {
                 historyDiv.innerHTML = '';
-                return;
-            }
-
-            // הדפסת הפקודה שהמשתמש "כתב"
-            print(`~ ${rawCmd}`, 'cmd-echo');
-
-            // הדפסת התשובה
-            if (fileSystem[finalCmd]) {
-                print(fileSystem[finalCmd]);
+            } else if (fileSystem[finalCmd]) {
+                // הדמיית "חשיבה" קצרה של המכונה
+                setTimeout(() => {
+                    print(fileSystem[finalCmd]);
+                }, 300);
             } else {
-                print(`פקודה לא מזוהה: ${rawCmd}`, 'error');
+                setTimeout(() => {
+                    print(`פקודה לא מזוהה: ${rawCmd}. נסה לבחור מהתפריט.`, 'error');
+                }, 200);
             }
+            
+            // החזרת פוקוס וגלילה
+            focusInput();
+            scrollToBottom();
         }
 
-        // טיפול בשליחה מהמקלדת
-        function handleSend() {
-            runCmd(inputField.value);
-        }
-
+        // האזנה לאנטר
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                handleSend();
+                runCmd(inputField.value);
             }
         });
 
