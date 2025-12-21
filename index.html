@@ -7,8 +7,8 @@
     <style>
         /* הגדרות כלליות לעיצוב */
         body {
-            background-color: #121212; /* רקע כהה */
-            color: #e0e0e0; /* טקסט בהיר */
+            background-color: #121212;
+            color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
@@ -28,7 +28,7 @@
         h1 {
             font-size: 3rem;
             margin: 0;
-            background: linear-gradient(45deg, #ff6b6b, #feca57); /* צבע מדורג */
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -42,11 +42,11 @@
         /* רשת הכרטיסיות */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* רוחב מינימלי לכרטיס */
+            gap: 25px; /* רווח בין הכרטיסים */
             width: 90%;
-            max-width: 1000px;
-            padding-bottom: 40px;
+            max-width: 1200px;
+            padding-bottom: 60px;
         }
 
         /* עיצוב כרטיסייה */
@@ -54,41 +54,59 @@
             background-color: #1e1e1e;
             border: 1px solid #333;
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             text-decoration: none;
             color: inherit;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 150px;
+            height: 160px; /* גובה אחיד */
         }
 
         .card:hover {
-            transform: translateY(-5px); /* תזוזה למעלה במעבר עכבר */
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             border-color: #feca57;
         }
 
         .card h2 {
-            margin: 0;
-            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+            color: #fff;
         }
 
         .card p {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #888;
+            margin: 0;
+            line-height: 1.4;
         }
 
-        .card .status {
-            font-size: 0.8rem;
+        /* תגיות סטטוס */
+        .status {
+            font-size: 0.75rem;
             font-weight: bold;
-            color: #4caf50; /* ירוק */
-            align-self: flex-end;
+            padding: 4px 8px;
+            border-radius: 4px;
+            align-self: flex-end; /* מצמיד את התגית לצד שמאל למטה */
+            margin-top: 15px;
+            background-color: rgba(255,255,255,0.05);
         }
-        
-        .card .status.wip {
+
+        .status.wip {
             color: #ff9800; /* כתום */
+            border: 1px solid #ff9800;
+        }
+
+        .status.planned {
+            color: #2196f3; /* כחול */
+            border: 1px solid #2196f3;
+        }
+
+        .status.done {
+            color: #4caf50; /* ירוק */
+            border: 1px solid #4caf50;
         }
 
     </style>
@@ -101,29 +119,55 @@
     </header>
 
     <div class="grid-container">
+        
         <a href="#" class="card">
             <div>
-                <h2>פרויקט ראשון</h2>
-                <p>כאן יהיה הסבר קצר על הפרויקט המגניב שנבנה בקרוב.</p>
+                <h2>אפליקציית ספורט</h2>
+                <p>ממשק למעקב אחרי ביצועים וסטטיסטיקות בזמן אמת.</p>
             </div>
             <span class="status wip">בבנייה...</span>
         </a>
 
         <a href="#" class="card">
             <div>
-                <h2>גלריית תמונות</h2>
-                <p>אזור שמציג תמונות או עיצובים בצורה דינמית.</p>
+                <h2>Dungeon Mind</h2>
+                <p>כלי עזר לשחקני מבוכים ודרקונים לניהול דמויות.</p>
             </div>
-            <span class="status wip">בקרוב</span>
+            <span class="status wip">בבנייה...</span>
         </a>
 
         <a href="#" class="card">
             <div>
-                <h2>משחקון</h2>
-                <p>ניסוי ב-JavaScript אינטראקטיבי.</p>
+                <h2>לוגיקה ופילוסופיה</h2>
+                <p>בלוג העוסק בקשר שבין לוגיקה פורמלית לקוד.</p>
             </div>
-            <span class="status wip">מתוכנן</span>
+            <span class="status planned">מתוכנן</span>
         </a>
+
+        <a href="#" class="card">
+            <div>
+                <h2>Market Tracker</h2>
+                <p>דשבורד למעקב אחרי מניות וקריפטו.</p>
+            </div>
+            <span class="status planned">מתוכנן</span>
+        </a>
+
+        <a href="#" class="card">
+            <div>
+                <h2>המדריך הדיגיטלי</h2>
+                <p>ספר אלקטרוני: איך למכור מוצרים דיגיטליים.</p>
+            </div>
+            <span class="status done">הושלם</span>
+        </a>
+
+        <a href="#" class="card">
+            <div>
+                <h2>תיק עבודות UX/UI</h2>
+                <p>ריכוז עבודות העיצוב הנבחרות שלי מהשנה האחרונה.</p>
+            </div>
+            <span class="status done">הושלם</span>
+        </a>
+
     </div>
 
 </body>
