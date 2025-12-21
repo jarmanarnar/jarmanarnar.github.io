@@ -1,56 +1,61 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex's Terminal v2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>הטרמינל של אלכס ריבקין</title>
     <style>
-        /* --- Hacker Style / עיצוב בסיסי --- */
         body {
             background-color: #0d0d0d;
-            color: #33ff33; /* ירוק טרמינל קלאסי */
-            font-family: 'Courier New', Courier, monospace;
+            color: #33ff33;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             margin: 0;
             padding: 20px;
             font-size: 16px;
-            line-height: 1.5;
             overflow-x: hidden;
+            direction: rtl;
+            text-align: right;
             height: 100vh;
+            box-sizing: border-box;
+            cursor: text; /* מרמז למשתמש שאפשר להקליד */
         }
 
-        /* --- אפקט מסך CRT (מסך ישן) --- */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
+        #terminal { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding-bottom: 50px;
+        }
+        
+        /* שורות בהיסטוריה */
+        .line {
+            margin-bottom: 2px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* שורת הקלט הפעילה */
+        #input-line {
+            display: none; /* מוסתר עד סוף האתחול */
+            margin-top: 5px;
+        }
+
+        .prompt {
+            color: #fff;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        /* קלט נסתר - תיקון מיקום ליציבות */
+        #real-input {
+            position: fixed;
             bottom: 0;
-            right: 0;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.25) 50%
-            ), linear-gradient(
-                90deg, 
-                rgba(255, 0, 0, 0.06), 
-                rgba(0, 255, 0, 0.02), 
-                rgba(0, 0, 255, 0.06)
-            );
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+            left: 0;
+            opacity: 0.01; /* לפעמים 0 לגמרי גורם לדפדפנים להתעלם */
+            height: 1px;
+            width: 1px;
+            border: none;
+            outline: none;
         }
-
-        #terminal {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-            /* אפקט זוהר קל לטקסט */
-            text-shadow: 0 0 2px #26c226; 
-        }
-
-        p { margin: 5px 0; }
 
         /* הסמן המהבהב */
         .cursor {
@@ -58,218 +63,255 @@
             width: 10px;
             height: 18px;
             background-color: #33ff33;
+            vertical-align: text-bottom;
             animation: blink 1s step-end infinite;
-            vertical-align: middle;
-            margin-left: 2px;
+        }
+        
+        /* סמן כשהפוקוס אבוד */
+        .cursor.lost-focus {
+            background-color: transparent;
+            border: 1px solid #33ff33;
+            animation: none;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- תפריט פקודות --- */
-        #menu-area {
-            display: none; /* מוסתר עד שההקלדה מסתיימת */
-            margin-top: 30px;
-            border-top: 1px dashed #33ff33;
-            padding-top: 20px;
-        }
-
-        .menu-title {
-            color: #fff;
-            margin-bottom: 15px;
-            display: block;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: bold;
-        }
-
-        .command-link {
-            display: block;
-            text-decoration: none;
-            color: #33ff33;
-            padding: 8px 10px;
-            margin-bottom: 5px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .command-link:hover {
-            background-color: #33ff33;
-            color: #0d0d0d;
-            font-weight: bold;
-        }
-
-        .command-link::before { content: "[ ] "; }
-        .command-link:hover::before { content: "[X] "; }
-
-        .comment {
-            color: #559955;
-            font-size: 0.9em;
-            margin-left: 15px;
-            font-style: italic;
-        }
-
-        /* --- אזור תוכן דינמי (החלון שנפתח) --- */
-        #module-display {
-            border: 2px solid #33ff33;
-            padding: 20px;
-            margin-top: 20px;
-            background-color: #001100;
-            display: none; /* מוסתר כברירת מחדל */
-            box-shadow: 0 0 15px rgba(51, 255, 51, 0.2);
-        }
+        /* צבעים להדגשה */
+        .cmd-response { color: #cccccc; margin-bottom: 15px; }
+        .success { color: #33ff33; }
+        .error { color: #ff3333; }
+        .highlight { color: #ffff33; }
         
-        #module-title {
-            margin-top: 0;
-            border-bottom: 1px solid #33ff33;
-            padding-bottom: 10px;
-            color: #fff;
+        /* הודעת סטטוס קטנה */
+        #status-bar {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            color: #555;
+            font-size: 12px;
+            pointer-events: none;
         }
-
-        .close-btn {
-            display: inline-block;
-            margin-top: 15px;
-            color: #ff5555;
-            cursor: pointer;
-            border: 1px solid #ff5555;
-            padding: 5px 10px;
-            text-decoration: none;
-        }
-        .close-btn:hover {
-            background-color: #ff5555;
-            color: black;
-        }
-
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <div id="output"></div>
+        <div id="history"></div>
         
-        <div id="active-line">
-            <span style="color:white;">root@alex-lab:~#</span> 
-            <span id="typing-text"></span><span class="cursor"></span>
-        </div>
-
-        <div id="menu-area">
-            <span class="menu-title">AVAILABLE MODULES:</span>
-            
-            <a class="command-link" onclick="executeCommand('PROJECT_ALPHA')">
-                RUN PROJECT_ALPHA <span class="comment">// AI Interface Experiments</span>
-            </a>
-
-            <a class="command-link" onclick="executeCommand('TRADING_BOT')">
-                EXECUTE TRADING_BOT <span class="comment">// Financial Algorithms</span>
-            </a>
-
-            <a class="command-link" onclick="executeCommand('DUNGEON_DB')">
-                ACCESS DUNGEON_DB <span class="comment">// RPG Knowledge System</span>
-            </a>
-
-            <a class="command-link" onclick="executeCommand('PHILOSOPHY')">
-                DECRYPT PHILOSOPHY <span class="comment">// Logic & Ethics Blog</span>
-            </a>
-
-            <br>
-            <a href="mailto:email@example.com" class="command-link" style="color:#fff;">
-                SEND_SIGNAL (CONTACT) <span class="comment">// Establish connection</span>
-            </a>
-        </div>
-
-        <div id="module-display">
-            <h3 id="module-title"></h3>
-            <div id="module-content"></div>
-            <a href="#" class="close-btn" onclick="closeModule()">[X] CLOSE MODULE</a>
+        <div id="input-line">
+            <span class="prompt">אלכס_ריבקין@מערכת:~$</span>
+            <span id="typed-text"></span><span class="cursor" id="cursor-el"></span>
         </div>
     </div>
 
+    <div id="status-bar">לחץ בכל מקום כדי להקליד</div>
+
+    <!-- שדה קלט נסתר -->
+    <input type="text" id="real-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
     <script>
-        // --- תוכן הפרויקטים שלך ---
-        // כאן אתה יכול לשנות את הטקסט שמופיע כשלוחצים על כפתור
-        const contentData = {
-            'PROJECT_ALPHA': "Initiating AI Interface...<br>This project explores LLM integration using Python.<br>Status: In Progress.<br>[Place holder for Github Link]",
-            'TRADING_BOT': "Loading Market Data...<br>Analyzing VGT and NUKZ ETFs.<br>Current Yield: +12.4%<br>Algorithm: Moving Average Crossover.",
-            'DUNGEON_DB': "Rolling D20... Critical Success!<br>Project 'Dungeon Mind' is a tool for DMs to organize campaigns.<br>Tech stack: React & Node.js.",
-            'PHILOSOPHY': "Decrypting...<br>Exploring Rawls' Theory of Justice and formal logic puzzles.<br>Latest post: 'The Ethics of AI Alignment'."
+        const historyDiv = document.getElementById('history');
+        const inputLine = document.getElementById('input-line');
+        const realInput = document.getElementById('real-input');
+        const typedTextSpan = document.getElementById('typed-text');
+        const cursorEl = document.getElementById('cursor-el');
+        const statusBar = document.getElementById('status-bar');
+
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        // --- תוכן המערכת ---
+        const fileSystem = {
+            'אודות': `שמי אלכס ריבקין, מעצב UX/UI.
+אני משלב חשיבה פילוסופית עם עיצוב פרקטי ליצירת מוצרים דיגיטליים משמעותיים.
+מתמחה במחקר משתמשים, ארכיטקטורת מידע ועיצוב ממשקים מורכבים.`,
+            
+            'כישורים': `סטטוס מיומנויות (Visual Mode):
+
+UX Research   [██████████--] 90%
+UI Design     [████████████] 100%
+Figma         [████████████] 100%
+Prototyping   [████████----] 80%
+HTML/CSS      [██████------] 60%
+Philosophy    [████████████] ∞
+
+* הנתונים מבוססים על הערכה עצמית וניסיון בפועל.`,
+
+            'פרויקטים': `תיק עבודות - אלכס ריבקין:
+1. פרויקט_אלפא (Case Study) - אפיון מחדש למערכת CRM.
+2. בוט_מסחר (UI Design) - עיצוב דשבורד למסחר קריפטו.
+3. מאגר_ידע (Mobile App) - אפליקציה לניהול משחקי D&D.
+
+* הקלד את שם הפרויקט לפרטים נוספים (למשל: "פרויקט_אלפא").`,
+
+            'צור_קשר': `מייל: alex@example.com
+לינקדאין: linkedin.com/in/alex-rivkin
+גיטהאב: github.com/alex`,
+            
+            'פרויקט_אלפא': `--- פרויקט אלפא ---
+אפיון מחדש (Redesign) למערכת ניהול לקוחות.
+האתגר: פישוט תהליכים מורכבים למשתמשי קצה לא טכניים.
+תוצאה: שיפור של 30% בזמן ביצוע משימות.
+כלים: Figma, Axure.`,
+            
+            'בוט_מסחר': `--- בוט מסחר ---
+עיצוב ממשק משתמש למערכת מסחר אלגוריתמית.
+דגש על "Dark Mode" וויזואליזציה של נתונים בזמן אמת (Data Viz).
+יצירת שפה עיצובית שמשדרת אמינות ומהירות.`,
+
+            'עזרה': `פקודות זמינות:
+- אודות
+- כישורים
+- פרויקטים
+- צור_קשר
+- נקה`,
+
+            'gui': `שגיאה: המשתמש העדיף טקסט נקי על פני פיקסלים יפים. טוען את המציאות מחדש...`,
+            'למה': `כי עיצוב הוא לא רק איך שזה נראה, אלא איך שזה עובד. (סטיב ג'ובס, אבל ברוח פילוסופית).`,
+            'why': `To find clarity in chaos.`
         };
 
-        const outputDiv = document.getElementById('output');
-        const activeLine = document.getElementById('active-line');
-        const menuArea = document.getElementById('menu-area');
-        const moduleDisplay = document.getElementById('module-display');
-        const moduleTitle = document.getElementById('module-title');
-        const moduleContent = document.getElementById('module-content');
+        const aliases = {
+            'help': 'עזרה',
+            'ls': 'פרויקטים',
+            'list': 'פרויקטים',
+            'projects': 'פרויקטים',
+            'about': 'אודות',
+            'contact': 'צור_קשר',
+            'skills': 'כישורים',
+            'clear': 'נקה',
+            'cls': 'נקה',
+            'gui': 'gui',
+            'why': 'why',
+            'למה': 'למה'
+        };
 
-        // שורות ה"אתחול" שרצות בהתחלה
-        const bootLines = [
-            "Booting system kernel...",
-            "Loading user profile: ALEX...",
-            "Bypassing security protocols... [SUCCESS]",
-            "Mounting project drives...",
-            "System online."
-        ];
-
-        // פונקציה שמקלידה טקסט אות-אחרי-אות
-        async function typeLine(text) {
-            const p = document.createElement('p');
-            p.innerHTML = "> "; // מתחילים עם חץ
-            outputDiv.appendChild(p);
-
-            // לולאה שעוברת אות-אות
-            for (let i = 0; i < text.length; i++) {
-                p.innerHTML += text.charAt(i);
-                // השהיה רנדומלית קצרה בין אותיות כדי שיראה אנושי
-                await new Promise(r => setTimeout(r, Math.random() * 30 + 10));
-                window.scrollTo(0, document.body.scrollHeight);
-            }
+        // --- ניהול פוקוס מתקדם ---
+        function forceFocus() {
+            realInput.focus();
+            cursorEl.classList.remove('lost-focus');
+            statusBar.innerText = "מחובר | הקלד פקודה";
         }
 
-        // הפונקציה הראשית שמריצה את האתחול
-        async function runBootSequence() {
-            activeLine.style.display = 'none'; // מסתיר את שורת ההקלדה הזמנית
+        // לחיצה בכל מקום במסמך מחזירה פוקוס
+        document.addEventListener('click', forceFocus);
+        
+        // זיהוי איבוד פוקוס
+        realInput.addEventListener('blur', () => {
+            cursorEl.classList.add('lost-focus');
+            statusBar.innerText = "מנותק | לחץ כדי להקליד";
+        });
 
-            for (const line of bootLines) {
+        // --- מנוע האתחול ---
+        async function bootSequence() {
+            const lines = [
+                "שם מלא: אלכס ריבקין",
+                "תפקיד: מעצב UX/UI",
+                "השכלה: MA PHILOSOPHY",
+                "--------------------------------",
+                "טוען סביבת עבודה...",
+                "הגישה אושרה. המערכת מוכנה."
+            ];
+
+            for (let line of lines) {
                 await typeLine(line);
-                // מחכים קצת בין שורה לשורה
-                await new Promise(r => setTimeout(r, 400));
             }
-
-            // סיום האתחול והצגת התפריט
-            const finalMsg = document.createElement('p');
-            finalMsg.innerHTML = "<span style='color:white'>root@alex-lab:~#</span> Initializing interface...";
-            outputDiv.appendChild(finalMsg);
             
-            setTimeout(() => {
-                menuArea.style.display = 'block';
-                window.scrollTo(0, document.body.scrollHeight);
-            }, 500);
-        }
-
-        // פונקציה שמטפלת בלחיצה על פרויקט
-        function executeCommand(cmdName) {
-            // קודם כל מציגים הודעה שהפקודה רצה
-            const p = document.createElement('p');
-            p.innerHTML = `<span style="color:white;">root@alex-lab:~#</span> Executing ${cmdName}...`;
-            outputDiv.insertBefore(p, menuArea); // מכניס את השורה לפני התפריט
-
-            // מציגים את החלון עם התוכן
-            moduleDisplay.style.display = 'block';
-            moduleTitle.innerText = `>> MODULE: ${cmdName}`;
-            
-            // טעינת התוכן מתוך המאגר למעלה
-            moduleContent.innerHTML = contentData[cmdName] || "Error: Data corrupted.";
-
+            inputLine.style.display = 'block';
+            forceFocus(); // פוקוס ראשוני
             window.scrollTo(0, document.body.scrollHeight);
         }
 
-        // פונקציה לסגירת החלון
-        function closeModule() {
-            moduleDisplay.style.display = 'none';
+        function typeLine(text) {
+            return new Promise(resolve => {
+                const div = document.createElement('div');
+                div.className = 'line';
+                div.innerHTML = `<span style="color:#559955">></span> ${text}`;
+                historyDiv.appendChild(div);
+                window.scrollTo(0, document.body.scrollHeight);
+                setTimeout(resolve, Math.random() * 100 + 30); // קצת יותר מהר
+            });
         }
 
-        // מתחילים את הכל!
-        runBootSequence();
+        // --- מנוע הטרמינל ---
+        
+        realInput.addEventListener('input', (e) => {
+            typedTextSpan.innerText = realInput.value;
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        realInput.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (commandHistory.length > 0) {
+                    historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+                    const prevCmd = commandHistory[commandHistory.length - 1 - historyIndex];
+                    realInput.value = prevCmd;
+                    typedTextSpan.innerText = prevCmd;
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    const nextCmd = commandHistory[commandHistory.length - 1 - historyIndex];
+                    realInput.value = nextCmd;
+                    typedTextSpan.innerText = nextCmd;
+                } else if (historyIndex === 0) {
+                    historyIndex = -1;
+                    realInput.value = '';
+                    typedTextSpan.innerText = '';
+                }
+            } 
+            else if (e.key === 'Enter') {
+                const cmd = realInput.value.trim();
+                
+                if (cmd) {
+                    commandHistory.push(cmd);
+                    historyIndex = -1;
+                }
+
+                processCommand(cmd);
+                realInput.value = ''; 
+                typedTextSpan.innerText = '';
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        });
+
+        function processCommand(cmd) {
+            const cmdDiv = document.createElement('div');
+            cmdDiv.className = 'line';
+            cmdDiv.innerHTML = `<span class="prompt">אלכס_ריבקין@מערכת:~$</span> ${cmd}`;
+            historyDiv.appendChild(cmdDiv);
+
+            if (!cmd) return;
+
+            if (cmd.startsWith('sudo')) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'line highlight';
+                errorDiv.innerText = `Nice try! אבל אין לך הרשאות שורש (Root) לחיים שלי.`;
+                historyDiv.appendChild(errorDiv);
+                return;
+            }
+
+            const lowerCmd = cmd.toLowerCase().replace(' ', '_');
+            const finalCmd = aliases[lowerCmd] || lowerCmd;
+
+            if (finalCmd === 'נקה') {
+                historyDiv.innerHTML = '';
+            } else if (fileSystem[finalCmd]) {
+                const responseDiv = document.createElement('div');
+                responseDiv.className = 'line cmd-response';
+                responseDiv.innerText = fileSystem[finalCmd];
+                historyDiv.appendChild(responseDiv);
+            } else {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'line error';
+                errorDiv.innerText = `פקודה לא מזוהה: "${cmd}". הקלד "עזרה" לרשימת האפשרויות.`;
+                historyDiv.appendChild(errorDiv);
+            }
+        }
+
+        setTimeout(bootSequence, 200);
 
     </script>
 </body>
