@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex's Terminal</title>
+    <title>Alex's System Interface</title>
     <style>
-        /* --- עיצוב האקרים --- */
+        /* --- עיצוב גלובלי --- */
         body {
             background-color: #0d0d0d;
-            color: #33ff33; /* ירוק טרמינל קלאסי */
+            color: #33ff33;
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 20px;
             font-size: 16px;
             line-height: 1.5;
+            overflow-x: hidden;
+            /* מעבר חלק בשינוי כיוון שפה */
+            transition: all 0.3s ease;
         }
 
         #terminal {
@@ -21,66 +24,76 @@
             margin: 0 auto;
         }
 
-        /* סגנון לשורות טקסט רגילות */
+        a { text-decoration: none; color: inherit; }
+
+        /* --- אלמנטים של הטרמינל --- */
         p { margin: 5px 0; }
+        
+        /* מחלקות עזר לכיווניות */
+        .ltr { direction: ltr; text-align: left; }
+        .rtl { direction: rtl; text-align: right; }
 
         /* הסמן המהבהב */
         .cursor {
             display: inline-block;
-            width: 8px;
-            height: 16px;
+            width: 10px;
+            height: 18px;
             background-color: #33ff33;
             animation: blink 1s step-end infinite;
             vertical-align: middle;
+            margin: 0 2px;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- תפריט הפקודות (מוסתר בהתחלה) --- */
-        #menu-area {
-            display: none; /* מוסתר עד שההקלדה נגמרת */
-            margin-top: 30px;
-            border-top: 1px dashed #33ff33;
-            padding-top: 20px;
+        /* --- מסך בחירת שפה --- */
+        #lang-selection {
+            margin-top: 50px;
+            border: 1px solid #33ff33;
+            padding: 20px;
+            display: none; /* יופיע רק אחרי טעינה ראשונית */
+            text-align: center;
         }
 
-        .menu-title {
-            color: #fff;
-            margin-bottom: 15px;
+        .lang-btn {
             display: block;
-        }
-
-        /* עיצוב ה"כפתורים" שיראו כמו פקודות */
-        .command-link {
-            display: block;
-            text-decoration: none;
-            color: #33ff33;
-            padding: 8px 10px;
-            margin-bottom: 5px;
+            margin: 10px auto;
+            padding: 10px;
             border: 1px solid transparent;
-            transition: all 0.2s;
             cursor: pointer;
+            width: 200px;
+            text-align: center; 
+            transition: 0.2s;
         }
 
-        .command-link:hover {
-            background-color: #33ff33; /* רקע ירוק */
-            color: #000; /* טקסט שחור */
+        .lang-btn:hover {
+            background-color: #33ff33;
+            color: #000;
             font-weight: bold;
         }
 
-        .command-link::before {
-            content: "[ ] "; /* קוביה ריקה לפני */
+        /* --- האזור הראשי (יוסתר עד לבחירה) --- */
+        #main-interface {
+            display: none;
         }
 
-        .command-link:hover::before {
-            content: "[X] "; /* קוביה מסומנת בהובר */
+        /* עיצוב התפריט הראשי */
+        .command-row {
+            display: block;
+            padding: 5px 0;
+            cursor: pointer;
+            border-bottom: 1px dotted #1a331a;
         }
+        .command-row:hover {
+            background: rgba(51, 255, 51, 0.1);
+        }
+        .command-row::before { content: "[ ] "; }
+        .command-row:hover::before { content: "[X] "; }
 
-        /* הערות בצד */
         .comment {
-            color: #666;
+            color: #595;
             font-size: 0.9em;
-            margin-left: 15px;
+            opacity: 0.8;
         }
 
     </style>
@@ -88,92 +101,195 @@
 <body>
 
     <div id="terminal">
-        <div id="output"></div>
         
-        <div id="active-line">
-            <span style="color:white;">root@alex-lab:~#</span> 
-            <span id="typing-text"></span><span class="cursor"></span>
+        <!-- שלב 1: מסך ה-BIOS ובחירת שפה -->
+        <div id="bios-screen">
+            <div id="bios-log"></div>
+            <div id="lang-selection">
+                <p>SYSTEM DETECTED. SELECT LANGUAGE INTERFACE:</p>
+                <br>
+                <div class="lang-btn" onclick="selectLanguage('en')">[1] ENGLISH</div>
+                <div class="lang-btn" onclick="selectLanguage('he')">[2] עברית</div>
+            </div>
         </div>
 
-        <div id="menu-area">
-            <span class="menu-title">AVAILABLE MODULES:</span>
+        <!-- שלב 2: הממשק הראשי (נטען דינמית) -->
+        <div id="main-interface">
+            <div id="boot-log"></div>
             
-            <a href="#" class="command-link">
-                RUN PROJECT_ALPHA <span class="comment">// AI Interface Experiments</span>
-            </a>
+            <div id="active-line" style="margin-top:20px;">
+                <span id="prompt-label" style="color:white; font-weight:bold;"></span>
+                <span id="cursor" class="cursor"></span>
+            </div>
 
-            <a href="#" class="command-link">
-                EXECUTE TRADING_BOT <span class="comment">// Algorithmic Finance Dashboard</span>
-            </a>
-
-            <a href="#" class="command-link">
-                ACCESS DUNGEON_DB <span class="comment">// RPG Knowledge System</span>
-            </a>
-
-            <a href="#" class="command-link">
-                DECRYPT PHILOSOPHY <span class="comment">// Logic & Ethics Blog</span>
-            </a>
-
-            <br>
-            <a href="mailto:email@example.com" class="command-link" style="color:#fff;">
-                SEND_SIGNAL (CONTACT) <span class="comment">// Establish connection</span>
-            </a>
+            <div id="commands-menu" style="margin-top: 30px; display:none; border-top: 1px dashed #33ff33; padding-top: 20px;">
+                <div id="menu-title" style="color:white; margin-bottom:15px; text-decoration: underline;"></div>
+                <div id="commands-list"></div>
+            </div>
         </div>
+
     </div>
 
     <script>
-        // הטקסטים שיופיעו בהתחלה
-        const lines = [
-            "Booting system kernel...",
-            "Loading user profile: ALEX...",
-            "Bypassing security protocols... [SUCCESS]",
-            "Mounting project drives...",
-            "System online."
+        // --- DATA OBJECTS: התוכן לכל שפה ---
+        const content = {
+            en: {
+                dir: 'ltr',
+                prompt: 'root@alex-lab:~#',
+                bootLines: [
+                    "Loading kernel modules...",
+                    "Mounting /home/alex...",
+                    "Checking identity... Verified.",
+                    "Starting visual interface...",
+                    "System Ready."
+                ],
+                menuTitle: "AVAILABLE MODULES:",
+                commands: [
+                    { id: 'ALPHA', text: "RUN PROJECT_ALPHA", comment: "// AI Interface Experiments" },
+                    { id: 'TRADE', text: "EXECUTE TRADING_BOT", comment: "// Algorithmic Finance" },
+                    { id: 'RPG',   text: "ACCESS DUNGEON_DB", comment: "// RPG Knowledge Base" },
+                    { id: 'BLOG',  text: "DECRYPT PHILOSOPHY", comment: "// Logic & Ethics Log" },
+                    { id: 'MAIL',  text: "SEND_SIGNAL (CONTACT)", comment: "// Secure Channel" }
+                ]
+            },
+            he: {
+                dir: 'rtl',
+                prompt: 'root@alex-il:~#',
+                bootLines: [
+                    "טוען ליבת מערכת...",
+                    "מבצע עגן לכונן משתמש: אלכס...",
+                    "מאמת זהות דיגיטלית... [אושר]",
+                    "מאתחל ממשק ויזואלי...",
+                    "המערכת מוכנה לשימוש."
+                ],
+                menuTitle: "מודולים זמינים למשתמש:",
+                commands: [
+                    { id: 'ALPHA', text: "הרץ את PROJECT_ALPHA", comment: "// ניסויים בבינה מלאכותית" },
+                    { id: 'TRADE', text: "פתח מסוף TRADING_BOT", comment: "// אלגוריתמים לפיננסים" },
+                    { id: 'RPG',   text: "גישה לארכיון DUNGEON_DB", comment: "// מאגר ידע למשחקי תפקידים" },
+                    { id: 'BLOG',  text: "פענוח יומן אישי", comment: "// מחשבות על קוד ואתיקה" },
+                    { id: 'MAIL',  text: "שדר אות מוצפן (צור קשר)", comment: "// ערוץ תקשורת מאובטח" }
+                ]
+            }
+        };
+
+        // --- STEP 1: BIOS & LANGUAGE SELECTION ---
+        
+        const biosLog = document.getElementById('bios-log');
+        const langSelect = document.getElementById('lang-selection');
+        
+        // טקסטים שרצים ממש בהתחלה לפני הבחירה
+        const biosLines = [
+            "> BIOS CHECK MEMORY... OK",
+            "> CPU 0... OK",
+            "> DETECTING USER INPUT DEVICES...",
+            "> WAITING FOR INPUT..."
         ];
 
-        let lineIndex = 0;
-        const outputDiv = document.getElementById('output');
-        const typingTextSpan = document.getElementById('typing-text');
-        const menuArea = document.getElementById('menu-area');
-        const activeLine = document.getElementById('active-line');
+        let biosIndex = 0;
 
-        // פונקציה שמדפיסה שורה אחר שורה
-        function runSequence() {
-            if (lineIndex < lines.length) {
-                // לוקח את השורה הנוכחית
-                const line = lines[lineIndex];
-                
-                // יוצר אלמנט חדש לשורה הקודמת (כדי שיישאר על המסך)
+        function runBios() {
+            if (biosIndex < biosLines.length) {
                 const p = document.createElement('p');
-                p.textContent = "> " + line;
-                outputDiv.appendChild(p);
-
-                lineIndex++;
-                
-                // מחכה זמן רנדומלי קצר כדי להרגיש "מחשב חושב"
-                const randomDelay = Math.floor(Math.random() * 300) + 100;
-                setTimeout(runSequence, randomDelay);
+                p.textContent = biosLines[biosIndex];
+                biosLog.appendChild(p);
+                biosIndex++;
+                setTimeout(runBios, 200);
             } else {
-                // סיימנו להקליד הכל!
-                finishBoot();
+                // מציג את מסך הבחירה
+                langSelect.style.display = 'block';
             }
         }
 
-        function finishBoot() {
-            // מסתיר את שורת ההקלדה המזויפת
-            activeLine.style.display = 'none';
-            
-            // מציג הודעה סופית קבועה
-            const finalMsg = document.createElement('p');
-            finalMsg.innerHTML = "<span style='color:white'>root@alex-lab:~#</span> Select command below:";
-            outputDiv.appendChild(finalMsg);
+        // מתחיל את ה-BIOS
+        setTimeout(runBios, 500);
 
-            // חושף את התפריט
-            menuArea.style.display = 'block';
+
+        // --- STEP 2: HANDLE SELECTION & MAIN BOOT ---
+
+        function selectLanguage(lang) {
+            // 1. הסתרת מסך ה-BIOS
+            document.getElementById('bios-screen').style.display = 'none';
+            
+            // 2. הגדרת כיוון ושפה ל-HTML
+            const selectedData = content[lang];
+            document.documentElement.lang = lang;
+            document.documentElement.dir = selectedData.dir;
+            document.body.style.textAlign = lang === 'he' ? 'right' : 'left';
+
+            // 3. הצגת הממשק הראשי
+            const mainInterface = document.getElementById('main-interface');
+            mainInterface.style.display = 'block';
+
+            // 4. הרצת הבוט הראשי (Boot Sequence) עם השפה הנבחרת
+            runMainBoot(selectedData);
         }
 
-        // מתחיל את התהליך אחרי שנייה
-        setTimeout(runSequence, 800);
+        function runMainBoot(data) {
+            const bootLog = document.getElementById('boot-log');
+            const activeLine = document.getElementById('active-line');
+            const promptLabel = document.getElementById('prompt-label');
+            
+            // עדכון הפרומפט הקבוע למטה
+            promptLabel.textContent = data.prompt;
+            // אם עברית, נוודא שהפרומפט (שהוא באנגלית) יוצג משמאל לימין בתוך הטקסט
+            if(data.dir === 'rtl') {
+                promptLabel.style.direction = 'ltr'; 
+                promptLabel.style.unicodeBidi = 'embed';
+                promptLabel.style.marginLeft = '10px';
+            } else {
+                promptLabel.style.marginRight = '10px';
+            }
+
+            let lineIdx = 0;
+            
+            function printLine() {
+                if (lineIdx < data.bootLines.length) {
+                    const p = document.createElement('p');
+                    
+                    // עיצוב שונה לפרומפט בכל שורה בלוג
+                    const promptSpan = `<span style="color:#555; direction:ltr; unicode-bidi:embed;">></span>`;
+                    p.innerHTML = promptSpan + " " + data.bootLines[lineIdx];
+                    
+                    bootLog.appendChild(p);
+                    window.scrollTo(0, document.body.scrollHeight);
+                    
+                    lineIdx++;
+                    setTimeout(printLine, Math.random() * 300 + 100);
+                } else {
+                    // סיום הבוט - הצגת התפריט
+                    showMenu(data);
+                }
+            }
+            
+            printLine();
+        }
+
+        function showMenu(data) {
+            const menuTitle = document.getElementById('menu-title');
+            const commandsList = document.getElementById('commands-list');
+            const commandsMenu = document.getElementById('commands-menu');
+
+            menuTitle.textContent = data.menuTitle;
+
+            // בניית הכפתורים דינמית לפי השפה
+            data.commands.forEach(cmd => {
+                const link = document.createElement('a');
+                link.className = 'command-row';
+                link.onclick = () => alert(cmd.text + " - Coming Soon!"); // כאן תהיה הפונקציונליות האמיתית
+                
+                // הוספת הערה (Comment)
+                // אם עברית, ההערה בצד שמאל, אם אנגלית בצד ימין
+                const commentSpan = `<span class="comment" style="float:${data.dir === 'rtl' ? 'left' : 'right'}">${cmd.comment}</span>`;
+                
+                link.innerHTML = `${cmd.text} ${commentSpan}`;
+                commandsList.appendChild(link);
+            });
+
+            // חשיפת התפריט
+            commandsMenu.style.display = 'block';
+            window.scrollTo(0, document.body.scrollHeight);
+        }
 
     </script>
 </body>
