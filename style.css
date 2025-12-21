@@ -1,112 +1,103 @@
-/* --- הגדרות בסיס --- */
+/* הגדרות כלליות לעיצוב */
 body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #121212;
-    color: #ffffff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-align: center;
-}
-
-/* --- סרגל ניווט עליון (Navbar) --- */
-nav {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 15px 40px;
-    background-color: rgba(18, 18, 18, 0.95);
-    border-bottom: 1px solid #333;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    min-height: 100vh;
 }
 
-.nav-logo {
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: #fff;
-    text-decoration: none;
+/* כותרת ראשית */
+header {
+    margin-top: 60px;
+    text-align: center;
+    margin-bottom: 40px;
 }
 
-.nav-links a {
-    color: #aaa;
-    text-decoration: none;
-    margin-right: 20px;
-    transition: color 0.3s;
-}
-
-.nav-links a:hover {
-    color: #4ade80;
-}
-
-/* --- כותרת ראשית (Hero) --- */
-.hero {
-    padding: 80px 20px;
-}
-
-.hero h1 {
-    font-size: 3.5rem;
+h1 {
+    font-size: 3rem;
     margin: 0;
-    letter-spacing: -1px;
+    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.hero span {
-    color: #4ade80;
-}
-
-.hero p {
+p.subtitle {
     font-size: 1.2rem;
     color: #a0a0a0;
-    margin-top: 15px;
-    margin-bottom: 30px;
+    margin-top: 10px;
 }
 
-.btn-primary {
-    background-color: #2563eb;
-    color: white;
-    padding: 12px 30px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background 0.3s;
-}
-
-.btn-primary:hover {
-    background-color: #1d4ed8;
-}
-
-/* --- אזור כרטיסיות --- */
-.section-title {
-    margin-top: 60px;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.card-container {
-    display: flex;
-    justify-content: center;
+/* רשת הכרטיסיות */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    width: 90%;
+    max-width: 1200px;
     padding-bottom: 60px;
 }
 
+/* עיצוב כרטיסייה */
 .card {
-    background-color: #f0f2f5;
-    color: #333;
-    width: 90%;
-    max-width: 800px;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
     border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    text-align: center;
+    padding: 25px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 160px;
 }
 
-.card img {
-    max-width: 100%;
-    border-radius: 8px;
-    margin-top: 20px;
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    border-color: #feca57;
 }
 
-.card h3 {
-    margin-top: 0;
-    font-size: 2rem;
+.card h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    color: #fff;
+}
+
+.card p {
+    font-size: 0.95rem;
+    color: #888;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* תגיות סטטוס */
+.status {
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    align-self: flex-end;
+    margin-top: 15px;
+    background-color: rgba(255,255,255,0.05);
+}
+
+.status.wip {
+    color: #ff9800;
+    border: 1px solid #ff9800;
+}
+
+.status.planned {
+    color: #2196f3;
+    border: 1px solid #2196f3;
+}
+
+.status.done {
+    color: #4caf50;
+    border: 1px solid #4caf50;
 }
