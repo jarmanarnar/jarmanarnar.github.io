@@ -1,68 +1,119 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>הפורטפוליו שלי</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Alex's Terminal</title>
+    <style>
+        /* --- עיצוב הטרמינל --- */
+        body {
+            background-color: #000000; /* שחור מוחלט */
+            color: #33ff33; /* ירוק זרחני של מסכים ישנים */
+            font-family: 'Courier New', Courier, monospace; /* פונט של קוד */
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden; /* שלא יהיו פסי גלילה */
+        }
+
+        #terminal-container {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        /* האפקט של הסמן המהבהב */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background-color: #33ff33;
+            margin-left: 5px;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* עיצוב שורות טקסט */
+        p {
+            margin: 0 0 10px 0;
+            white-space: pre-wrap; /* שומר על ירידות שורה */
+        }
+
+        .command-prefix {
+            color: #fff; /* צבע לבן לסימן > */
+            margin-right: 10px;
+        }
+
+    </style>
 </head>
 <body>
 
-    <header>
-        <h1>המעבדה של אלכס</h1> <p class="subtitle">UX/UI • לוגיקה פורמלית • בינה מלאכותית</p>
-    </header>
-
-    <div class="grid-container">
+    <div id="terminal-container">
+        <div id="output-area"></div>
         
-        <a href="#" class="card">
-            <div>
-                <h2>AI & Logic Interfaces</h2>
-                <p>מחקר ויזואלי על איך מנגישים מודלים של שפה ולוגיקה למשתמש הקצה.</p>
-            </div>
-            <span class="status wip">במחקר</span>
-        </a>
-
-        <a href="#" class="card">
-            <div>
-                <h2>Algorithmic Trading UX</h2>
-                <p>אפיון דשבורד למסחר מבוסס אלגוריתמים וניתוח שוק ההון.</p>
-            </div>
-            <span class="status planned">בתכנון</span>
-        </a>
-
-        <a href="#" class="card">
-            <div>
-                <h2>Dungeon Mind</h2>
-                <p>מערכת לניהול ידע מורכב (Knowledge Base) עבור משחקי תפקידים.</p>
-            </div>
-            <span class="status wip">פרויקט אישי</span>
-        </a>
-
-        <a href="#" class="card">
-            <div>
-                <h2>The Ethics of Design</h2>
-                <p>מאמרים ומחשבות על המתח שבין דפוסי עיצוב (Dark Patterns) לאתיקה.</p>
-            </div>
-            <span class="status done">כתיבה</span>
-        </a>
-
-        <a href="#" class="card">
-            <div>
-                <h2>Python Automation</h2>
-                <p>סקריפטים וכלים שבניתי לייעול תהליכי עבודה ועיבוד מידע.</p>
-            </div>
-            <span class="status done">קוד</span>
-        </a>
-
-        <a href="#" class="card">
-            <div>
-                <h2>Digital Product Guide</h2>
-                <p>המדריך המלא ליצירה והפצה של מוצרים דיגיטליים עצמאיים.</p>
-            </div>
-            <span class="status done">הושלם</span>
-        </a>
-
+        <div id="input-line">
+            <span class="command-prefix">></span><span id="typewriter-text"></span><span class="cursor"></span>
+        </div>
     </div>
+
+
+    <script>
+        // הטקסטים שהמערכת "תקליד" בהתחלה
+        const bootSequence = [
+            "Initializing Alex's Lab Environment...",
+            "Loading logic modules... [OK]",
+            "Connecting to neural networks... [OK]",
+            "System ready.",
+            "", // שורה ריקה
+            "Welcome, User. Let's build something cool."
+        ];
+
+        let lineIndex = 0;
+        let charIndex = 0;
+        const typingSpeed = 50; // מהירות ההקלדה (במילישניות)
+        const lineDelay = 500; // המתנה בין שורות
+
+        const outputArea = document.getElementById('output-area');
+        const typewriterText = document.getElementById('typewriter-text');
+        const cursor = document.querySelector('.cursor');
+
+        function typeLines() {
+            if (lineIndex < bootSequence.length) {
+                // אם זו לא השורה האחרונה, אנחנו מדפיסים אותה בבת אחת למעלה
+                if (lineIndex < bootSequence.length - 1) {
+                    const newLine = document.createElement('p');
+                    newLine.innerHTML = '<span class="command-prefix">></span>' + bootSequence[lineIndex];
+                    outputArea.appendChild(newLine);
+                    lineIndex++;
+                    setTimeout(typeLines, lineDelay);
+                } 
+                // אם זו השורה האחרונה, נקליד אותה לאט
+                else {
+                    typeLastLine();
+                }
+            }
+        }
+
+        function typeLastLine() {
+            const currentLineText = bootSequence[lineIndex];
+            if (charIndex < currentLineText.length) {
+                typewriterText.textContent += currentLineText.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeLastLine, typingSpeed);
+            } else {
+                // סיימנו להקליד הכל
+                cursor.style.animation = "blink 1s step-end infinite"; // הסמן ממשיך להבהב
+            }
+        }
+
+        // התחלת האנימציה אחרי שנייה
+        setTimeout(typeLines, 1000);
+
+    </script>
 
 </body>
 </html>
