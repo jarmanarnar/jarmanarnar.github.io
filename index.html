@@ -3,33 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex's System Interface</title>
+    <title>Alex's Terminal v2.0</title>
     <style>
-        /* --- עיצוב גלובלי --- */
+        /* --- Hacker Style / עיצוב בסיסי --- */
         body {
             background-color: #0d0d0d;
-            color: #33ff33;
+            color: #33ff33; /* ירוק טרמינל קלאסי */
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 20px;
             font-size: 16px;
             line-height: 1.5;
             overflow-x: hidden;
-            transition: all 0.3s ease;
+            height: 100vh;
+        }
+
+        /* --- אפקט מסך CRT (מסך ישן) --- */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg, 
+                rgba(255, 0, 0, 0.06), 
+                rgba(0, 255, 0, 0.02), 
+                rgba(0, 0, 255, 0.06)
+            );
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
 
         #terminal {
             max-width: 800px;
             margin: 0 auto;
-            padding-bottom: 100px;
+            position: relative;
+            z-index: 1;
+            /* אפקט זוהר קל לטקסט */
+            text-shadow: 0 0 2px #26c226; 
         }
 
-        a { text-decoration: none; color: inherit; }
-
         p { margin: 5px 0; }
-        
-        .ltr { direction: ltr; text-align: left; }
-        .rtl { direction: rtl; text-align: right; }
 
         /* הסמן המהבהב */
         .cursor {
@@ -39,92 +60,84 @@
             background-color: #33ff33;
             animation: blink 1s step-end infinite;
             vertical-align: middle;
-            margin: 0 2px;
+            margin-left: 2px;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- מסך בחירת שפה --- */
-        #lang-selection {
-            margin-top: 50px;
-            border: 1px solid #33ff33;
-            padding: 20px;
-            display: none;
-            text-align: center;
-        }
-
-        .lang-btn {
-            display: block;
-            margin: 10px auto;
-            padding: 10px;
-            border: 1px solid transparent;
-            cursor: pointer;
-            width: 200px;
-            text-align: center; 
-            transition: 0.2s;
-        }
-
-        .lang-btn:hover {
-            background-color: #33ff33;
-            color: #000;
-            font-weight: bold;
-        }
-
-        /* --- האזור הראשי --- */
-        #main-interface {
-            display: none;
-        }
-
-        /* עיצוב התפריט הראשי */
-        .command-row {
-            display: block;
-            padding: 5px 0;
-            cursor: pointer;
-            border-bottom: 1px dotted #1a331a;
-        }
-        .command-row:hover {
-            background: rgba(51, 255, 51, 0.1);
-        }
-        .command-row::before { content: "[ ] "; }
-        .command-row:hover::before { content: "[X] "; }
-
-        .comment {
-            color: #595;
-            font-size: 0.9em;
-            opacity: 0.8;
-        }
-
-        /* --- אזור צ'אט AI --- */
-        #ai-interface {
-            display: none;
-            margin-top: 20px;
-            border-top: 2px solid #33ff33;
+        /* --- תפריט פקודות --- */
+        #menu-area {
+            display: none; /* מוסתר עד שההקלדה מסתיימת */
+            margin-top: 30px;
+            border-top: 1px dashed #33ff33;
             padding-top: 20px;
         }
 
-        .input-line {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .user-input {
-            background: transparent;
-            border: none;
+        .menu-title {
             color: #fff;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 16px;
-            width: 100%;
-            outline: none;
-            margin: 0 10px;
+            margin-bottom: 15px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
         }
 
-        .ai-msg { color: #ccffcc; margin-bottom: 15px; white-space: pre-wrap; }
-        .user-msg { color: #aaaaaa; margin-bottom: 5px; font-weight: bold; }
+        .command-link {
+            display: block;
+            text-decoration: none;
+            color: #33ff33;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .command-link:hover {
+            background-color: #33ff33;
+            color: #0d0d0d;
+            font-weight: bold;
+        }
+
+        .command-link::before { content: "[ ] "; }
+        .command-link:hover::before { content: "[X] "; }
+
+        .comment {
+            color: #559955;
+            font-size: 0.9em;
+            margin-left: 15px;
+            font-style: italic;
+        }
+
+        /* --- אזור תוכן דינמי (החלון שנפתח) --- */
+        #module-display {
+            border: 2px solid #33ff33;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #001100;
+            display: none; /* מוסתר כברירת מחדל */
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.2);
+        }
         
-        .loading-spinner::after {
-            content: " [PROCESSING...]";
-            animation: blink 0.5s infinite;
+        #module-title {
+            margin-top: 0;
+            border-bottom: 1px solid #33ff33;
+            padding-bottom: 10px;
+            color: #fff;
+        }
+
+        .close-btn {
+            display: inline-block;
+            margin-top: 15px;
+            color: #ff5555;
+            cursor: pointer;
+            border: 1px solid #ff5555;
+            padding: 5px 10px;
+            text-decoration: none;
+        }
+        .close-btn:hover {
+            background-color: #ff5555;
+            color: black;
         }
 
     </style>
@@ -132,303 +145,131 @@
 <body>
 
     <div id="terminal">
+        <div id="output"></div>
         
-        <!-- שלב 1: מסך ה-BIOS ובחירת שפה -->
-        <div id="bios-screen">
-            <div id="bios-log"></div>
-            <div id="lang-selection">
-                <p>SYSTEM DETECTED. SELECT LANGUAGE INTERFACE:</p>
-                <br>
-                <div class="lang-btn" onclick="selectLanguage('en')">[1] ENGLISH</div>
-                <div class="lang-btn" onclick="selectLanguage('he')">[2] עברית</div>
-            </div>
+        <div id="active-line">
+            <span style="color:white;">root@alex-lab:~#</span> 
+            <span id="typing-text"></span><span class="cursor"></span>
         </div>
 
-        <!-- שלב 2: הממשק הראשי -->
-        <div id="main-interface">
-            <div id="boot-log"></div>
+        <div id="menu-area">
+            <span class="menu-title">AVAILABLE MODULES:</span>
             
-            <div id="active-line" style="margin-top:20px;">
-                <span id="prompt-label" style="color:white; font-weight:bold;"></span>
-                <span id="cursor" class="cursor"></span>
-            </div>
+            <a class="command-link" onclick="executeCommand('PROJECT_ALPHA')">
+                RUN PROJECT_ALPHA <span class="comment">// AI Interface Experiments</span>
+            </a>
 
-            <div id="commands-menu" style="margin-top: 30px; display:none; border-top: 1px dashed #33ff33; padding-top: 20px;">
-                <div id="menu-title" style="color:white; margin-bottom:15px; text-decoration: underline;"></div>
-                <div id="commands-list"></div>
-            </div>
+            <a class="command-link" onclick="executeCommand('TRADING_BOT')">
+                EXECUTE TRADING_BOT <span class="comment">// Financial Algorithms</span>
+            </a>
 
-            <!-- אזור האינטראקציה עם ה-AI -->
-            <div id="ai-interface">
-                <div id="chat-history"></div>
-                <div class="input-line">
-                    <span id="ai-prompt-label" style="color:#33ff33;">AI@CORE:~$</span>
-                    <input type="text" id="ai-user-input" class="user-input" autocomplete="off" placeholder="_">
-                </div>
-            </div>
+            <a class="command-link" onclick="executeCommand('DUNGEON_DB')">
+                ACCESS DUNGEON_DB <span class="comment">// RPG Knowledge System</span>
+            </a>
+
+            <a class="command-link" onclick="executeCommand('PHILOSOPHY')">
+                DECRYPT PHILOSOPHY <span class="comment">// Logic & Ethics Blog</span>
+            </a>
+
+            <br>
+            <a href="mailto:email@example.com" class="command-link" style="color:#fff;">
+                SEND_SIGNAL (CONTACT) <span class="comment">// Establish connection</span>
+            </a>
         </div>
 
+        <div id="module-display">
+            <h3 id="module-title"></h3>
+            <div id="module-content"></div>
+            <a href="#" class="close-btn" onclick="closeModule()">[X] CLOSE MODULE</a>
+        </div>
     </div>
 
     <script>
-        const apiKey = ""; // API Key handled by environment
-        let currentLang = 'en';
-
-        // --- DATA OBJECTS ---
-        const content = {
-            en: {
-                dir: 'ltr',
-                prompt: 'root@alex-lab:~#',
-                aiPrompt: 'GUEST@CORE:~$',
-                bootLines: [
-                    "Loading kernel modules...",
-                    "Mounting /home/alex...",
-                    "Checking identity... Verified.",
-                    "Starting visual interface...",
-                    "System Ready."
-                ],
-                menuTitle: "AVAILABLE MODULES:",
-                aiWelcome: "AI UPLINK ESTABLISHED. I am Alex's Automated Assistant Kernel. How can I help you?",
-                commands: [
-                    { id: 'AI',    text: "INIT_AI_UPLINK ✨", comment: "// Chat with System Core" },
-                    { id: 'ALPHA', text: "RUN PROJECT_ALPHA", comment: "// AI Interface Experiments" },
-                    { id: 'TRADE', text: "EXECUTE TRADING_BOT", comment: "// Algorithmic Finance" },
-                    { id: 'RPG',   text: "ACCESS DUNGEON_DB", comment: "// RPG Knowledge Base" },
-                    { id: 'BLOG',  text: "DECRYPT PHILOSOPHY", comment: "// Logic & Ethics Log" }
-                ]
-            },
-            he: {
-                dir: 'rtl',
-                prompt: 'root@alex-il:~#',
-                aiPrompt: 'GUEST@CORE:~$',
-                bootLines: [
-                    "טוען ליבת מערכת...",
-                    "מבצע עגן לכונן משתמש: אלכס...",
-                    "מאמת זהות דיגיטלית... [אושר]",
-                    "מאתחל ממשק ויזואלי...",
-                    "המערכת מוכנה לשימוש."
-                ],
-                menuTitle: "מודולים זמינים למשתמש:",
-                aiWelcome: "ערוץ AI מאובטח הושלם. אני ליבת המערכת האוטומטית של אלכס. כיצד ניתן לסייע?",
-                commands: [
-                    { id: 'AI',    text: "אתחול ערוץ AI ✨", comment: "// שוחח עם ליבת המערכת" },
-                    { id: 'ALPHA', text: "הרץ את PROJECT_ALPHA", comment: "// ניסויים בבינה מלאכותית" },
-                    { id: 'TRADE', text: "פתח מסוף TRADING_BOT", comment: "// אלגוריתמים לפיננסים" },
-                    { id: 'RPG',   text: "גישה לארכיון DUNGEON_DB", comment: "// מאגר ידע למשחקי תפקידים" },
-                    { id: 'BLOG',  text: "פענוח יומן אישי", comment: "// מחשבות על קוד ואתיקה" }
-                ]
-            }
+        // --- תוכן הפרויקטים שלך ---
+        // כאן אתה יכול לשנות את הטקסט שמופיע כשלוחצים על כפתור
+        const contentData = {
+            'PROJECT_ALPHA': "Initiating AI Interface...<br>This project explores LLM integration using Python.<br>Status: In Progress.<br>[Place holder for Github Link]",
+            'TRADING_BOT': "Loading Market Data...<br>Analyzing VGT and NUKZ ETFs.<br>Current Yield: +12.4%<br>Algorithm: Moving Average Crossover.",
+            'DUNGEON_DB': "Rolling D20... Critical Success!<br>Project 'Dungeon Mind' is a tool for DMs to organize campaigns.<br>Tech stack: React & Node.js.",
+            'PHILOSOPHY': "Decrypting...<br>Exploring Rawls' Theory of Justice and formal logic puzzles.<br>Latest post: 'The Ethics of AI Alignment'."
         };
 
-        // --- BIOS & INIT ---
-        
-        const biosLog = document.getElementById('bios-log');
-        const langSelect = document.getElementById('lang-selection');
-        const biosLines = [
-            "> BIOS CHECK MEMORY... OK",
-            "> CPU 0... OK",
-            "> DETECTING NEURAL ENGINE... OK", 
-            "> WAITING FOR INPUT..."
+        const outputDiv = document.getElementById('output');
+        const activeLine = document.getElementById('active-line');
+        const menuArea = document.getElementById('menu-area');
+        const moduleDisplay = document.getElementById('module-display');
+        const moduleTitle = document.getElementById('module-title');
+        const moduleContent = document.getElementById('module-content');
+
+        // שורות ה"אתחול" שרצות בהתחלה
+        const bootLines = [
+            "Booting system kernel...",
+            "Loading user profile: ALEX...",
+            "Bypassing security protocols... [SUCCESS]",
+            "Mounting project drives...",
+            "System online."
         ];
 
-        let biosIndex = 0;
+        // פונקציה שמקלידה טקסט אות-אחרי-אות
+        async function typeLine(text) {
+            const p = document.createElement('p');
+            p.innerHTML = "> "; // מתחילים עם חץ
+            outputDiv.appendChild(p);
 
-        function runBios() {
-            if (biosIndex < biosLines.length) {
-                const p = document.createElement('p');
-                p.textContent = biosLines[biosIndex];
-                biosLog.appendChild(p);
-                biosIndex++;
-                setTimeout(runBios, 200);
-            } else {
-                langSelect.style.display = 'block';
+            // לולאה שעוברת אות-אות
+            for (let i = 0; i < text.length; i++) {
+                p.innerHTML += text.charAt(i);
+                // השהיה רנדומלית קצרה בין אותיות כדי שיראה אנושי
+                await new Promise(r => setTimeout(r, Math.random() * 30 + 10));
+                window.scrollTo(0, document.body.scrollHeight);
             }
         }
-        setTimeout(runBios, 500);
 
-        function selectLanguage(lang) {
-            currentLang = lang;
-            document.getElementById('bios-screen').style.display = 'none';
+        // הפונקציה הראשית שמריצה את האתחול
+        async function runBootSequence() {
+            activeLine.style.display = 'none'; // מסתיר את שורת ההקלדה הזמנית
+
+            for (const line of bootLines) {
+                await typeLine(line);
+                // מחכים קצת בין שורה לשורה
+                await new Promise(r => setTimeout(r, 400));
+            }
+
+            // סיום האתחול והצגת התפריט
+            const finalMsg = document.createElement('p');
+            finalMsg.innerHTML = "<span style='color:white'>root@alex-lab:~#</span> Initializing interface...";
+            outputDiv.appendChild(finalMsg);
             
-            const selectedData = content[lang];
-            document.documentElement.lang = lang;
-            document.documentElement.dir = selectedData.dir;
-            document.body.style.textAlign = lang === 'he' ? 'right' : 'left';
-
-            const mainInterface = document.getElementById('main-interface');
-            mainInterface.style.display = 'block';
-
-            runMainBoot(selectedData);
+            setTimeout(() => {
+                menuArea.style.display = 'block';
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 500);
         }
 
-        function runMainBoot(data) {
-            const bootLog = document.getElementById('boot-log');
-            const activeLine = document.getElementById('active-line');
-            const promptLabel = document.getElementById('prompt-label');
+        // פונקציה שמטפלת בלחיצה על פרויקט
+        function executeCommand(cmdName) {
+            // קודם כל מציגים הודעה שהפקודה רצה
+            const p = document.createElement('p');
+            p.innerHTML = `<span style="color:white;">root@alex-lab:~#</span> Executing ${cmdName}...`;
+            outputDiv.insertBefore(p, menuArea); // מכניס את השורה לפני התפריט
+
+            // מציגים את החלון עם התוכן
+            moduleDisplay.style.display = 'block';
+            moduleTitle.innerText = `>> MODULE: ${cmdName}`;
             
-            promptLabel.textContent = data.prompt;
-            if(data.dir === 'rtl') {
-                promptLabel.style.direction = 'ltr'; 
-                promptLabel.style.unicodeBidi = 'embed';
-                promptLabel.style.marginLeft = '10px';
-            } else {
-                promptLabel.style.marginRight = '10px';
-            }
+            // טעינת התוכן מתוך המאגר למעלה
+            moduleContent.innerHTML = contentData[cmdName] || "Error: Data corrupted.";
 
-            let lineIdx = 0;
-            function printLine() {
-                if (lineIdx < data.bootLines.length) {
-                    const p = document.createElement('p');
-                    const promptSpan = `<span style="color:#555; direction:ltr; unicode-bidi:embed;">></span>`;
-                    p.innerHTML = promptSpan + " " + data.bootLines[lineIdx];
-                    bootLog.appendChild(p);
-                    window.scrollTo(0, document.body.scrollHeight);
-                    lineIdx++;
-                    setTimeout(printLine, Math.random() * 300 + 100);
-                } else {
-                    showMenu(data);
-                }
-            }
-            printLine();
-        }
-
-        function showMenu(data) {
-            const menuTitle = document.getElementById('menu-title');
-            const commandsList = document.getElementById('commands-list');
-            const commandsMenu = document.getElementById('commands-menu');
-
-            menuTitle.textContent = data.menuTitle;
-            commandsList.innerHTML = '';
-
-            data.commands.forEach(cmd => {
-                const link = document.createElement('a');
-                link.className = 'command-row';
-                link.onclick = () => executeCommand(cmd);
-                
-                const commentSpan = `<span class="comment" style="float:${data.dir === 'rtl' ? 'left' : 'right'}">${cmd.comment}</span>`;
-                link.innerHTML = `${cmd.text} ${commentSpan}`;
-                commandsList.appendChild(link);
-            });
-
-            commandsMenu.style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
         }
 
-        // --- COMMAND EXECUTION ---
-
-        function executeCommand(cmd) {
-            if (cmd.id === 'AI') {
-                activateAI();
-            } else {
-                alert(`${cmd.text} - System functionality simulation. (Select AI for live demo)`);
-            }
+        // פונקציה לסגירת החלון
+        function closeModule() {
+            moduleDisplay.style.display = 'none';
         }
 
-        // --- AI LOGIC ---
-
-        function activateAI() {
-            const aiInterface = document.getElementById('ai-interface');
-            const commandsMenu = document.getElementById('commands-menu');
-            const data = content[currentLang];
-
-            // Hide menu, show AI
-            commandsMenu.style.display = 'none';
-            aiInterface.style.display = 'block';
-            
-            // Set input prompt direction
-            const aiPromptLabel = document.getElementById('ai-prompt-label');
-            aiPromptLabel.textContent = data.aiPrompt;
-            if (currentLang === 'he') {
-                aiPromptLabel.style.direction = 'ltr';
-                aiPromptLabel.style.unicodeBidi = 'embed';
-            }
-
-            // Welcome message
-            addAIMessage(data.aiWelcome);
-
-            // Focus input
-            const input = document.getElementById('ai-user-input');
-            input.focus();
-            input.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    handleUserQuery(this.value);
-                    this.value = '';
-                }
-            });
-        }
-
-        async function handleUserQuery(query) {
-            if (!query.trim()) return;
-
-            // Add user message to log
-            const chatHistory = document.getElementById('chat-history');
-            const userDiv = document.createElement('div');
-            userDiv.className = 'user-msg';
-            userDiv.textContent = `> ${query}`;
-            chatHistory.appendChild(userDiv);
-
-            // Add loading indicator
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'ai-msg loading-spinner';
-            loadingDiv.textContent = "CORE_SYSTEM";
-            chatHistory.appendChild(loadingDiv);
-            window.scrollTo(0, document.body.scrollHeight);
-
-            try {
-                // Determine prompt based on language
-                const sysPrompt = currentLang === 'he' 
-                    ? "אתה מערכת ההפעלה של אתר הפורטפוליו של אלכס. שמך הוא AlexOS. ענה בקצרה, בטון טכנולוגי/סייברפאנק, אך מנומס ועוזר. השתמש במושגים טכניים מדי פעם."
-                    : "You are the operating system of Alex's portfolio website. Your name is AlexOS. Answer briefly, in a tech/cyberpunk tone, but be helpful and polite. Use technical jargon occasionally.";
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: query }] }],
-                        systemInstruction: { parts: [{ text: sysPrompt }] }
-                    })
-                });
-
-                const data = await response.json();
-                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "System Error: Connection severed.";
-
-                // Remove loading, type out response
-                chatHistory.removeChild(loadingDiv);
-                typeWriterResponse(aiText);
-
-            } catch (error) {
-                chatHistory.removeChild(loadingDiv);
-                addAIMessage("CRITICAL ERROR: Uplink failed. Check console.");
-                console.error(error);
-            }
-        }
-
-        function addAIMessage(text) {
-            const chatHistory = document.getElementById('chat-history');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'ai-msg';
-            msgDiv.textContent = text;
-            chatHistory.appendChild(msgDiv);
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        function typeWriterResponse(text) {
-            const chatHistory = document.getElementById('chat-history');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'ai-msg';
-            chatHistory.appendChild(msgDiv);
-
-            let i = 0;
-            function type() {
-                if (i < text.length) {
-                    msgDiv.textContent += text.charAt(i);
-                    i++;
-                    window.scrollTo(0, document.body.scrollHeight);
-                    setTimeout(type, 15); // Typing speed
-                }
-            }
-            type();
-        }
+        // מתחילים את הכל!
+        runBootSequence();
 
     </script>
 </body>
