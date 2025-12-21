@@ -45,7 +45,7 @@
             display: flex;
             align-items: center;
             width: 100%;
-            margin-top: auto; 
+            margin-top: auto; /* דוחף את שורת הקלט לתחתית אם התוכן קצר */
             padding-top: 20px;
             border-top: 1px dashed #1a4d1a;
             visibility: hidden;
@@ -77,11 +77,12 @@
             margin: 0;
         }
 
+        /* --- עיצוב חדש לאלמנטים --- */
         .highlight { color: #fff; font-weight: bold; }
         .dim { color: #666; }
         .error { color: #ff5555; }
         
-        /* כותרת ראשית */
+        /* כותרת ראשית נקייה */
         .main-header {
             font-size: 1.4em;
             font-weight: bold;
@@ -99,67 +100,63 @@
             font-size: 0.9em;
         }
 
-        /* --- תפריט ניווט חדש ונקי --- */
-        .nav-bar {
+        /* תפריט רשת מודרני */
+        .menu-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 30px; /* מרווח אוורירי */
+            gap: 12px;
             margin-top: 15px;
-            margin-bottom: 25px;
-            border-bottom: 1px solid #1a4d1a;
-            padding-bottom: 15px;
+            margin-bottom: 25px; /* רווח בין התפריט לתוכן */
+            border-bottom: 1px solid #1a4d1a; /* קו הפרדה עדין */
+            padding-bottom: 20px;
             width: 100%;
         }
 
-        .nav-item {
+        .menu-btn {
+            border: 1px solid #1a4d1a;
+            background: rgba(0, 20, 0, 0.3);
+            color: #33ff33;
+            padding: 10px 20px;
             cursor: pointer;
-            color: #555; /* צבע ברירת מחדל עמום */
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: inherit;
-            font-size: 1em;
-            transition: all 0.3s ease;
+            font-size: 0.95em;
             position: relative;
+            overflow: hidden;
             display: flex;
             align-items: center;
         }
 
-        /* מספר קטן ליד כל פריט */
-        .nav-num {
-            font-size: 0.7em;
-            margin-left: 5px;
+        .menu-btn::before {
+            content: '>';
+            margin-left: 8px;
             opacity: 0.5;
-            color: #33ff33;
+            transition: margin-left 0.2s;
         }
 
-        /* אפקט Hover */
-        .nav-item:hover {
+        .menu-btn:hover {
+            border-color: #33ff33;
+            background: rgba(51, 255, 51, 0.1);
             color: #fff;
-            text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(51, 255, 51, 0.15);
         }
 
-        .nav-item:hover .nav-num {
+        .menu-btn:hover::before {
+            margin-left: 12px;
+            color: #33ff33;
             opacity: 1;
-        }
-        
-        /* קו תחתון מונפש בהובר */
-        .nav-item::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            right: 0;
-            width: 0;
-            height: 2px;
-            background-color: #33ff33;
-            transition: width 0.3s;
-        }
-
-        .nav-item:hover::after {
-            width: 100%;
         }
 
         /* אזורי תוכן */
-        #static-header { width: 100%; }
-        #dynamic-output { width: 100%; min-height: 200px; }
+        #static-header {
+            width: 100%;
+        }
+
+        #dynamic-output {
+            width: 100%;
+            min-height: 200px; /* גובה מינימלי כדי למנוע קפיצות */
+        }
 
         /* כרטיסיות פרויקטים */
         .project-card {
@@ -167,7 +164,7 @@
             border-top: 4px solid #33ff33;
             background: #050505;
             padding: 20px;
-            margin: 0;
+            margin: 0; /* ביטלתי מרג'ין כי זה מחליף תוכן */
             width: 100%; 
             max-width: 600px;
             position: relative;
@@ -206,6 +203,7 @@
             border-radius: 2px;
         }
 
+        /* קישורים בטקסט */
         .text-link {
             cursor: pointer;
             color: #33ff33;
@@ -221,13 +219,13 @@
 <body onclick="focusInput()">
 
     <div id="terminal-container">
-        <!-- אזור עליון קבוע -->
+        <!-- אזור עליון קבוע: כותרת ותפריט -->
         <div id="static-header"></div>
         
         <!-- אזור תוכן מתחלף -->
         <div id="dynamic-output"></div>
         
-        <!-- שורת קלט -->
+        <!-- שורת קלט (תמיד למטה) -->
         <div id="active-prompt">
             <span class="prompt-sign">אלכס_AI:~ </span>
             <input type="text" id="cmd-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -303,7 +301,7 @@
     <div class="tag">Mobile First</div> <div class="tag">Gamification</div>
 </div>`,
 
-            'עזרה': 'נסה ללחוץ על הקישורים בתפריט העליון.',
+            'עזרה': 'נסה ללחוץ על הכפתורים בתפריט למעלה.',
             'נקה': 'CLS'
         };
 
@@ -315,6 +313,7 @@
             'clear': 'נקה'
         };
 
+        // מנוע הקלדה
         function typeNode(parent, node) {
             return new Promise(async resolve => {
                 if (node.nodeType === Node.TEXT_NODE) {
@@ -323,6 +322,8 @@
                     parent.appendChild(textNode);
                     for (let i = 0; i < text.length; i++) {
                         textNode.textContent += text[i];
+                        // גלילה רק אם צריך (לרוב לא צריך כי התוכן מחליף)
+                        // scrollToBottom(); 
                         await new Promise(r => setTimeout(r, Math.random() * 3 + 1)); 
                     }
                     resolve();
@@ -345,6 +346,7 @@
             });
         }
 
+        // פונקציית הדפסה - מקבלת קונטיינר יעד
         async function print(html, className = 'line', instant = false, targetContainer = dynamicOutput) {
             const div = document.createElement('div');
             div.className = className;
@@ -386,24 +388,26 @@
         async function boot() {
             hidePrompt();
             
-            // כותרת
+            // כותרת נקייה ומודרנית - נכנסת לסטטי
             const header = `
 <div class="main-header">ALEX RIVKIN</div>
 <div class="sub-header">UX/UI DESIGNER // SYSTEM ONLINE</div>`;
+            
             await print(header, 'line', true, staticHeader); 
 
-            // תפריט ניווט נקי
+            // תפריט כפתורים מודרני - נכנס לסטטי
             const menu = `
-            <div class="nav-bar">
-                <div class="nav-item" onclick="runCmd('פרויקטים')"><span class="nav-num">01.</span> פרויקטים</div>
-                <div class="nav-item" onclick="runCmd('אודות')"><span class="nav-num">02.</span> אודות</div>
-                <div class="nav-item" onclick="runCmd('כישורים')"><span class="nav-num">03.</span> כישורים</div>
-                <div class="nav-item" onclick="runCmd('צור_קשר')"><span class="nav-num">04.</span> צור קשר</div>
+            <div class="menu-grid">
+                <div class="menu-btn" onclick="runCmd('פרויקטים')">פרויקטים</div>
+                <div class="menu-btn" onclick="runCmd('אודות')">אודות</div>
+                <div class="menu-btn" onclick="runCmd('כישורים')">כישורים</div>
+                <div class="menu-btn" onclick="runCmd('צור_קשר')">צור קשר</div>
             </div>
             `;
             await print(menu, 'line', true, staticHeader);
 
-            await runCmd('אודות', true);
+            // הודעת פתיחה באזור הדינמי
+            await runCmd('אודות', true); // מריץ את 'אודות' אוטומטית בהתחלה, בלי לוג
         }
 
         async function runCmd(cmdText, skipLog = false) {
@@ -411,7 +415,13 @@
             if (!rawCmd) return;
 
             hidePrompt(); 
+            
+            // ניקוי האזור הדינמי - המפתח ל"החלפת תוכן"
             dynamicOutput.innerHTML = '';
+
+            // אם זה הגיע מהקלדה ידנית ולא לחיצה, אולי נרצה להראות מה הוקלד?
+            // המשתמש ביקש "לא להוסיף לאלכס AI", אז אנחנו מדלגים על שורת הפרומפט.
+            
             inputField.value = '';
 
             const key = rawCmd.toLowerCase().replace(' ', '_');
@@ -420,6 +430,7 @@
             if (finalCmd === 'נקה') {
                 dynamicOutput.innerHTML = '';
             } else if (fileSystem[finalCmd]) {
+                // הדפסת התוכן החדש עם אפקט הקלדה
                 await print(fileSystem[finalCmd], 'line', false, dynamicOutput);
             } else {
                 await print(`פקודה לא מזוהה: ${rawCmd}.`, 'error', false, dynamicOutput);
