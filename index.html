@@ -8,12 +8,13 @@
         /* --- עיצוב האקרים --- */
         body {
             background-color: #0d0d0d;
-            color: #33ff33; /* ירוק טרמינל קלאסי */
+            color: #33ff33;
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 20px;
             font-size: 16px;
             line-height: 1.5;
+            padding-bottom: 100px; /* רווח למטה לגלילה */
         }
 
         #terminal {
@@ -21,10 +22,17 @@
             margin: 0 auto;
         }
 
-        /* סגנון לשורות טקסט רגילות */
         p { margin: 5px 0; }
 
-        /* הסמן המהבהב */
+        /* כותרות בתוך הפלט */
+        .output-header {
+            color: #fff;
+            font-weight: bold;
+            margin-top: 20px;
+            border-bottom: 1px solid #33ff33;
+            display: inline-block;
+        }
+
         .cursor {
             display: inline-block;
             width: 8px;
@@ -36,52 +44,40 @@
 
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- תפריט הפקודות (מוסתר בהתחלה) --- */
+        /* --- תפריט --- */
         #menu-area {
-            display: none; /* מוסתר עד שההקלדה נגמרת */
+            display: none;
             margin-top: 30px;
-            border-top: 1px dashed #33ff33;
+            border-top: 1px dashed #333;
             padding-top: 20px;
         }
 
-        .menu-title {
-            color: #fff;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        /* עיצוב ה"כפתורים" שיראו כמו פקודות */
         .command-link {
             display: block;
             text-decoration: none;
             color: #33ff33;
-            padding: 8px 10px;
-            margin-bottom: 5px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
+            padding: 5px 0;
             cursor: pointer;
         }
 
         .command-link:hover {
-            background-color: #33ff33; /* רקע ירוק */
-            color: #000; /* טקסט שחור */
-            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #33ff33;
         }
 
-        .command-link::before {
-            content: "[ ] "; /* קוביה ריקה לפני */
-        }
+        .command-link::before { content: "> EXECUTE "; color: #666; }
+        .comment { color: #555; font-size: 0.85em; margin-left: 10px; font-style: italic;}
 
-        .command-link:hover::before {
-            content: "[X] "; /* קוביה מסומנת בהובר */
+        /* כפתור חזרה */
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            border: 1px solid #33ff33;
+            color: #33ff33;
+            padding: 5px 10px;
+            cursor: pointer;
         }
-
-        /* הערות בצד */
-        .comment {
-            color: #666;
-            font-size: 0.9em;
-            margin-left: 15px;
-        }
+        .back-btn:hover { background: #33ff33; color: #000; }
 
     </style>
 </head>
@@ -96,84 +92,124 @@
         </div>
 
         <div id="menu-area">
-            <span class="menu-title">AVAILABLE MODULES:</span>
+            <div style="color:#fff; margin-bottom:15px;">AVAILABLE MODULES:</div>
             
-            <a href="#" class="command-link">
-                RUN PROJECT_ALPHA <span class="comment">// AI Interface Experiments</span>
-            </a>
+            <div class="command-link" onclick="runCommand('ai')">
+                PROJECT_ALPHA <span class="comment">// Visualizing LLMs & Logic</span>
+            </div>
 
-            <a href="#" class="command-link">
-                EXECUTE TRADING_BOT <span class="comment">// Algorithmic Finance Dashboard</span>
-            </a>
+            <div class="command-link" onclick="runCommand('finance')">
+                TRADING_BOT_UX <span class="comment">// Algorithmic Trading Dashboard</span>
+            </div>
 
-            <a href="#" class="command-link">
-                ACCESS DUNGEON_DB <span class="comment">// RPG Knowledge System</span>
-            </a>
+            <div class="command-link" onclick="runCommand('dnd')">
+                DUNGEON_MIND <span class="comment">// RPG Knowledge Base</span>
+            </div>
 
-            <a href="#" class="command-link">
-                DECRYPT PHILOSOPHY <span class="comment">// Logic & Ethics Blog</span>
-            </a>
-
-            <br>
-            <a href="mailto:email@example.com" class="command-link" style="color:#fff;">
-                SEND_SIGNAL (CONTACT) <span class="comment">// Establish connection</span>
-            </a>
+            <div class="command-link" onclick="runCommand('about')">
+                WHOAMI <span class="comment">// User Profile & Skills</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // הטקסטים שיופיעו בהתחלה
-        const lines = [
-            "Booting system kernel...",
-            "Loading user profile: ALEX...",
-            "Bypassing security protocols... [SUCCESS]",
-            "Mounting project drives...",
-            "System online."
-        ];
+        // --- תוכן הפרויקטים (ה"דאטה" שלך) ---
+        const projectData = {
+            'ai': `
+                <div class="output-header">PROJECT ALPHA: AI INTERFACES</div>
+                <p>Status: <span style="color:orange">Research Phase</span></p>
+                <p>Description: A conceptual interface designed to bridge the gap between formal logic and Large Language Models.</p>
+                <p>Tech Stack: Python, OpenAI API, React.</p>
+                <p>> Analyzing prompt engineering patterns...</p>
+                <p>> Visualizing token output...</p>
+                <br>
+                <p>"The goal is to make the black box transparent."</p>
+            `,
+            'finance': `
+                <div class="output-header">TRADING BOT DASHBOARD</div>
+                <p>Status: <span style="color:#2196f3">Planned</span></p>
+                <p>Description: UI/UX for an automated high-frequency trading bot.</p>
+                <p>Focus: Data visualization, Real-time latency, Dark mode ergonomics.</p>
+                <br>
+                <p>> Connecting to market API... [SIMULATED]</p>
+            `,
+            'dnd': `
+                <div class="output-header">DUNGEON MIND</div>
+                <p>Status: <span style="color:green">Active Development</span></p>
+                <p>Description: A dedicated app for Dungeon Masters to manage complex lore and NPC relationships.</p>
+                <p>> Loading assets...</p>
+                <p>> Rolling initiative... [20 - CRITICAL SUCCESS]</p>
+            `,
+            'about': `
+                <div class="output-header">USER: ALEX</div>
+                <p>Role: Product Designer / Logic Enthusiast</p>
+                <p>Level: 34</p>
+                <p>Skills: UX Research, UI Design, Python, Philosophy.</p>
+                <p>Mission: Building digital tools that amplify human intelligence.</p>
+            `
+        };
 
+        // --- לוגיקה של האתחול ---
+        const bootLines = [
+            "Booting kernel...",
+            "Loading modules...",
+            "System ready."
+        ];
         let lineIndex = 0;
         const outputDiv = document.getElementById('output');
-        const typingTextSpan = document.getElementById('typing-text');
-        const menuArea = document.getElementById('menu-area');
         const activeLine = document.getElementById('active-line');
+        const menuArea = document.getElementById('menu-area');
 
-        // פונקציה שמדפיסה שורה אחר שורה
-        function runSequence() {
-            if (lineIndex < lines.length) {
-                // לוקח את השורה הנוכחית
-                const line = lines[lineIndex];
-                
-                // יוצר אלמנט חדש לשורה הקודמת (כדי שיישאר על המסך)
+        function boot() {
+            if (lineIndex < bootLines.length) {
                 const p = document.createElement('p');
-                p.textContent = "> " + line;
+                p.textContent = "> " + bootLines[lineIndex];
                 outputDiv.appendChild(p);
-
                 lineIndex++;
-                
-                // מחכה זמן רנדומלי קצר כדי להרגיש "מחשב חושב"
-                const randomDelay = Math.floor(Math.random() * 300) + 100;
-                setTimeout(runSequence, randomDelay);
+                setTimeout(boot, 150);
             } else {
-                // סיימנו להקליד הכל!
-                finishBoot();
+                activeLine.style.display = 'none';
+                menuArea.style.display = 'block';
+                // הודעה קבועה אחרי האתחול
+                outputDiv.innerHTML += "<br><p style='color:#fff'>Welcome to the Lab. Select a module to execute:</p>";
             }
         }
 
-        function finishBoot() {
-            // מסתיר את שורת ההקלדה המזויפת
-            activeLine.style.display = 'none';
-            
-            // מציג הודעה סופית קבועה
-            const finalMsg = document.createElement('p');
-            finalMsg.innerHTML = "<span style='color:white'>root@alex-lab:~#</span> Select command below:";
-            outputDiv.appendChild(finalMsg);
+        // --- הפונקציה שמריצה פקודות ---
+        function runCommand(id) {
+            // 1. מסתירים את התפריט (כדי לנקות את המסך)
+            menuArea.style.display = 'none';
 
-            // חושף את התפריט
-            menuArea.style.display = 'block';
+            // 2. מדפיסים שורת "הרצה"
+            const cmdLine = document.createElement('p');
+            cmdLine.innerHTML = `<span style="color:#fff">root@alex-lab:~#</span> execute ${id}.exe`;
+            outputDiv.appendChild(cmdLine);
+
+            // 3. מחכים קצת ואז מציגים את התוכן
+            setTimeout(() => {
+                const result = document.createElement('div');
+                result.innerHTML = projectData[id]; // שואב את התוכן מהמשתנה למעלה
+                
+                // כפתור חזרה לתפריט הראשי
+                result.innerHTML += `<div class="back-btn" onclick="resetTerminal()">[ < BACK TO MENU ]</div>`;
+                
+                outputDiv.appendChild(result);
+                
+                // גלילה אוטומטית למטה
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 400);
         }
 
-        // מתחיל את התהליך אחרי שנייה
-        setTimeout(runSequence, 800);
+        // --- חזרה לתפריט ---
+        function resetTerminal() {
+            outputDiv.innerHTML = ""; // מנקה את המסך
+            activeLine.style.display = 'none';
+            menuArea.style.display = 'block';
+            outputDiv.innerHTML += "<p style='color:#fff'>System ready. Awaiting command...</p>";
+        }
+
+        // התחלה
+        setTimeout(boot, 500);
 
     </script>
 </body>
