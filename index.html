@@ -5,34 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alex's Terminal</title>
     <style>
-        /* --- עיצוב האקרים --- */
+        /* --- העיצוב המקורי שאהבת --- */
         body {
             background-color: #0d0d0d;
-            color: #33ff33;
+            color: #33ff33; /* ירוק טרמינל מקורי */
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 20px;
             font-size: 16px;
             line-height: 1.5;
-            padding-bottom: 100px; /* רווח למטה לגלילה */
+            padding-bottom: 100px;
         }
 
         #terminal {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         p { margin: 5px 0; }
 
-        /* כותרות בתוך הפלט */
-        .output-header {
-            color: #fff;
-            font-weight: bold;
-            margin-top: 20px;
-            border-bottom: 1px solid #33ff33;
-            display: inline-block;
-        }
-
+        /* אפקטים של טקסט */
         .cursor {
             display: inline-block;
             width: 8px;
@@ -44,168 +36,131 @@
 
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- תפריט --- */
-        #menu-area {
-            display: none;
-            margin-top: 30px;
-            border-top: 1px dashed #333;
-            padding-top: 20px;
-        }
-
+        /* עיצוב הקישורים שיראו כמו חלק מהקוד */
         .command-link {
-            display: block;
             text-decoration: none;
-            color: #33ff33;
-            padding: 5px 0;
+            color: #fff; /* לבן כדי לבלוט קצת */
             cursor: pointer;
+            border-bottom: 1px dashed #444;
+            transition: color 0.2s;
         }
 
         .command-link:hover {
-            color: #fff;
-            text-shadow: 0 0 5px #33ff33;
-        }
-
-        .command-link::before { content: "> EXECUTE "; color: #666; }
-        .comment { color: #555; font-size: 0.85em; margin-left: 10px; font-style: italic;}
-
-        /* כפתור חזרה */
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            border: 1px solid #33ff33;
             color: #33ff33;
-            padding: 5px 10px;
-            cursor: pointer;
+            border-bottom: 1px solid #33ff33;
+            text-shadow: 0 0 8px rgba(51, 255, 51, 0.6);
         }
-        .back-btn:hover { background: #33ff33; color: #000; }
+
+        /* הפרדה ויזואלית לתוצאות */
+        .result-block {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            padding-left: 15px;
+            border-left: 2px solid #333;
+            color: #ccc; /* אפור בהיר לתוכן */
+        }
+
+        .highlight { color: #feca57; } /* צבע להדגשות */
 
     </style>
 </head>
 <body>
 
     <div id="terminal">
-        <div id="output"></div>
+        <div id="history"></div>
         
-        <div id="active-line">
-            <span style="color:white;">root@alex-lab:~#</span> 
-            <span id="typing-text"></span><span class="cursor"></span>
-        </div>
-
-        <div id="menu-area">
-            <div style="color:#fff; margin-bottom:15px;">AVAILABLE MODULES:</div>
-            
-            <div class="command-link" onclick="runCommand('ai')">
-                PROJECT_ALPHA <span class="comment">// Visualizing LLMs & Logic</span>
-            </div>
-
-            <div class="command-link" onclick="runCommand('finance')">
-                TRADING_BOT_UX <span class="comment">// Algorithmic Trading Dashboard</span>
-            </div>
-
-            <div class="command-link" onclick="runCommand('dnd')">
-                DUNGEON_MIND <span class="comment">// RPG Knowledge Base</span>
-            </div>
-
-            <div class="command-link" onclick="runCommand('about')">
-                WHOAMI <span class="comment">// User Profile & Skills</span>
-            </div>
+        <div id="active-line" style="margin-top:20px;">
+            <span style="color:#33ff33;">root@alex-lab:~#</span> 
+            <span id="typing-area"></span><span class="cursor"></span>
         </div>
     </div>
 
     <script>
-        // --- תוכן הפרויקטים (ה"דאטה" שלך) ---
-        const projectData = {
+        const historyDiv = document.getElementById('history');
+        const typingArea = document.getElementById('typing-area');
+
+        // --- תוכן הפרויקטים ---
+        const projects = {
             'ai': `
-                <div class="output-header">PROJECT ALPHA: AI INTERFACES</div>
-                <p>Status: <span style="color:orange">Research Phase</span></p>
-                <p>Description: A conceptual interface designed to bridge the gap between formal logic and Large Language Models.</p>
-                <p>Tech Stack: Python, OpenAI API, React.</p>
-                <p>> Analyzing prompt engineering patterns...</p>
-                <p>> Visualizing token output...</p>
-                <br>
-                <p>"The goal is to make the black box transparent."</p>
-            `,
+STATUS: <span class="highlight">Research Phase</span>
+DESC: Interface bridging Formal Logic & LLMs.
+STACK: Python, OpenAI API.
+LOG: Analyzing token patterns... [DONE]
+`,
             'finance': `
-                <div class="output-header">TRADING BOT DASHBOARD</div>
-                <p>Status: <span style="color:#2196f3">Planned</span></p>
-                <p>Description: UI/UX for an automated high-frequency trading bot.</p>
-                <p>Focus: Data visualization, Real-time latency, Dark mode ergonomics.</p>
-                <br>
-                <p>> Connecting to market API... [SIMULATED]</p>
-            `,
+STATUS: <span class="highlight">Planned</span>
+DESC: Algorithmic Trading Dashboard.
+TARGET: Real-time latency visualization.
+`,
             'dnd': `
-                <div class="output-header">DUNGEON MIND</div>
-                <p>Status: <span style="color:green">Active Development</span></p>
-                <p>Description: A dedicated app for Dungeon Masters to manage complex lore and NPC relationships.</p>
-                <p>> Loading assets...</p>
-                <p>> Rolling initiative... [20 - CRITICAL SUCCESS]</p>
-            `,
-            'about': `
-                <div class="output-header">USER: ALEX</div>
-                <p>Role: Product Designer / Logic Enthusiast</p>
-                <p>Level: 34</p>
-                <p>Skills: UX Research, UI Design, Python, Philosophy.</p>
-                <p>Mission: Building digital tools that amplify human intelligence.</p>
-            `
+STATUS: <span class="highlight">Active</span>
+DESC: Dungeon Mind - RPG Knowledge Base.
+NOTE: Helping DMs manage complex lore.
+`,
+            'contact': `
+EMAIL: alex@example.com
+LINKEDIN: /in/alex-designer
+MSG: "Let's build something."
+`
         };
 
-        // --- לוגיקה של האתחול ---
-        const bootLines = [
+        // --- שלב 1: האתחול (בדיוק כמו שאהבת) ---
+        const bootText = [
             "Booting kernel...",
-            "Loading modules...",
+            "Loading Alex's profile...",
             "System ready."
         ];
+        
         let lineIndex = 0;
-        const outputDiv = document.getElementById('output');
-        const activeLine = document.getElementById('active-line');
-        const menuArea = document.getElementById('menu-area');
 
         function boot() {
-            if (lineIndex < bootLines.length) {
-                const p = document.createElement('p');
-                p.textContent = "> " + bootLines[lineIndex];
-                outputDiv.appendChild(p);
+            if (lineIndex < bootText.length) {
+                addToHistory("> " + bootText[lineIndex]);
                 lineIndex++;
                 setTimeout(boot, 150);
             } else {
-                activeLine.style.display = 'none';
-                menuArea.style.display = 'block';
-                // הודעה קבועה אחרי האתחול
-                outputDiv.innerHTML += "<br><p style='color:#fff'>Welcome to the Lab. Select a module to execute:</p>";
+                showMenu();
             }
         }
 
-        // --- הפונקציה שמריצה פקודות ---
-        function runCommand(id) {
-            // 1. מסתירים את התפריט (כדי לנקות את המסך)
-            menuArea.style.display = 'none';
-
-            // 2. מדפיסים שורת "הרצה"
-            const cmdLine = document.createElement('p');
-            cmdLine.innerHTML = `<span style="color:#fff">root@alex-lab:~#</span> execute ${id}.exe`;
-            outputDiv.appendChild(cmdLine);
-
-            // 3. מחכים קצת ואז מציגים את התוכן
-            setTimeout(() => {
-                const result = document.createElement('div');
-                result.innerHTML = projectData[id]; // שואב את התוכן מהמשתנה למעלה
-                
-                // כפתור חזרה לתפריט הראשי
-                result.innerHTML += `<div class="back-btn" onclick="resetTerminal()">[ < BACK TO MENU ]</div>`;
-                
-                outputDiv.appendChild(result);
-                
-                // גלילה אוטומטית למטה
-                window.scrollTo(0, document.body.scrollHeight);
-            }, 400);
+        // פונקציה להוספת שורה להיסטוריה
+        function addToHistory(htmlContent) {
+            const p = document.createElement('div');
+            p.style.marginBottom = "5px";
+            p.innerHTML = htmlContent;
+            historyDiv.appendChild(p);
+            window.scrollTo(0, document.body.scrollHeight); // גלילה למטה
         }
 
-        // --- חזרה לתפריט ---
-        function resetTerminal() {
-            outputDiv.innerHTML = ""; // מנקה את המסך
-            activeLine.style.display = 'none';
-            menuArea.style.display = 'block';
-            outputDiv.innerHTML += "<p style='color:#fff'>System ready. Awaiting command...</p>";
+        // --- שלב 2: הצגת התפריט (כחלק מההיסטוריה) ---
+        function showMenu() {
+            addToHistory("<br><span style='color:#fff'>AVAILABLE COMMANDS (Click to run):</span>");
+            addToHistory(`[ <span class="command-link" onclick="run('ai')">run project_alpha.exe</span> ] -- AI & Logic`);
+            addToHistory(`[ <span class="command-link" onclick="run('finance')">run trading_bot.sh</span> ] --- Finance UX`);
+            addToHistory(`[ <span class="command-link" onclick="run('dnd')">run dungeon_mind.db</span> ] -- RPG Tools`);
+            addToHistory(`[ <span class="command-link" onclick="run('contact')">run contact_info.txt</span> ] -- Connect`);
+        }
+
+        // --- שלב 3: הרצת פקודה (בלי למחוק את המסך!) ---
+        function run(projectId) {
+            // 1. מדמה כתיבה של המשתמש
+            typingArea.textContent = " execute " + projectId;
+            
+            setTimeout(() => {
+                // 2. מעביר את הפקודה להיסטוריה
+                addToHistory(`<span style="color:#33ff33;">root@alex-lab:~#</span> execute ${projectId}`);
+                typingArea.textContent = ""; // מנקה את השורה למטה
+
+                // 3. מציג את התוצאה
+                if (projects[projectId]) {
+                    addToHistory(`<div class="result-block">${projects[projectId]}</div>`);
+                }
+
+                // 4. מציג שוב את התפריט כדי שיהיה נוח
+                // (אופציונלי - אם אתה רוצה שזה יראה נקי יותר אפשר למחוק את השורה הבאה)
+                // showMenu(); 
+                
+            }, 300);
         }
 
         // התחלה
