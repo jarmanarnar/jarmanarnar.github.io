@@ -5,313 +5,303 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>הטרמינל של אלכס ריבקין</title>
     <style>
+        /* --- בסיס --- */
         body {
-            background-color: #0d0d0d;
+            background-color: #121212; /* קצת יותר בהיר משחור מוחלט לקונטרסט במובייל */
             color: #33ff33;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             margin: 0;
-            padding: 20px;
-            font-size: 16px;
-            overflow-x: hidden;
-            direction: rtl;
-            text-align: right;
+            padding: 0; /* איפוס ריפוד */
+            font-size: 16px; /* גודל בסיס קריא */
+            display: flex;
+            flex-direction: column;
             height: 100vh;
-            box-sizing: border-box;
-            cursor: text; /* מרמז למשתמש שאפשר להקליד */
+            overflow: hidden; /* מניעת גלילה כפולה */
         }
 
-        #terminal { 
-            max-width: 900px; 
-            margin: 0 auto; 
-            padding-bottom: 50px;
+        /* --- אזור התוכן הנגלל --- */
+        #terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 100px; /* רווח מלמטה כדי שהתוכן לא יוסתר ע"י המקלדת */
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* גלילה חלקה ב-iOS */
         }
-        
-        /* שורות בהיסטוריה */
+
+        /* שורות טקסט */
         .line {
-            margin-bottom: 2px;
+            margin-bottom: 8px;
             white-space: pre-wrap;
-            line-height: 1.4;
+            line-height: 1.5;
+            word-break: break-word; /* מונע גלישה אופקית במובייל */
         }
 
-        /* שורת הקלט הפעילה */
-        #input-line {
-            display: none; /* מוסתר עד סוף האתחול */
-            margin-top: 5px;
+        /* --- אזור השליטה התחתון (קבוע) --- */
+        #control-panel {
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            z-index: 100;
         }
 
-        .prompt {
-            color: #fff;
-            font-weight: bold;
-            margin-left: 8px;
+        /* סרגל הצעות (כפתורים מהירים) */
+        #quick-actions {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto; /* גלילה אופקית אם יש הרבה כפתורים */
+            padding-bottom: 5px;
+            -ms-overflow-style: none;  /* הסתרת פס גלילה */
+            scrollbar-width: none;  /* הסתרת פס גלילה */
         }
+        #quick-actions::-webkit-scrollbar { display: none; }
 
-        /* קלט נסתר - תיקון מיקום ליציבות */
-        #real-input {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            opacity: 0.01; /* לפעמים 0 לגמרי גורם לדפדפנים להתעלם */
-            height: 1px;
-            width: 1px;
-            border: none;
-            outline: none;
-        }
-
-        /* הסמן המהבהב */
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 18px;
-            background-color: #33ff33;
-            vertical-align: text-bottom;
-            animation: blink 1s step-end infinite;
-        }
-        
-        /* סמן כשהפוקוס אבוד */
-        .cursor.lost-focus {
-            background-color: transparent;
+        .action-btn {
+            background: rgba(51, 255, 51, 0.1);
             border: 1px solid #33ff33;
-            animation: none;
+            color: #33ff33;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            flex-shrink: 0; /* מונע כיווץ */
+        }
+        .action-btn:active {
+            background: #33ff33;
+            color: #000;
         }
 
-        @keyframes blink { 50% { opacity: 0; } }
+        /* שורת הקלט האמיתית */
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 5px 10px;
+        }
 
-        /* צבעים להדגשה */
-        .cmd-response { color: #cccccc; margin-bottom: 15px; }
-        .success { color: #33ff33; }
-        .error { color: #ff3333; }
+        .prompt-sign {
+            color: #33ff33;
+            margin-left: 10px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 16px;
+            flex: 1;
+            outline: none;
+            padding: 5px 0;
+        }
+
+        /* כפתור "שלח" (חץ) למובייל */
+        #send-btn {
+            background: transparent;
+            border: none;
+            color: #33ff33;
+            font-size: 20px;
+            padding: 0 5px;
+            cursor: pointer;
+        }
+
+        /* --- עיצוב הודעות --- */
+        .system-msg { color: #888; font-style: italic; font-size: 0.9em; margin-top: 5px;}
         .highlight { color: #ffff33; }
+        .error { color: #ff5555; }
+        .cmd-echo { color: #fff; font-weight: bold; margin-top: 15px; } /* הפקודה שהמשתמש כתב */
         
-        /* הודעת סטטוס קטנה */
-        #status-bar {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            color: #555;
-            font-size: 12px;
-            pointer-events: none;
+        .project-card {
+            border-right: 3px solid #33ff33;
+            padding-right: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+        }
+
+        .link-text {
+            text-decoration: underline;
+            cursor: pointer;
+            color: #33ff33;
         }
     </style>
 </head>
 <body>
 
-    <div id="terminal">
+    <!-- אזור הפלט הראשי -->
+    <div id="terminal-output">
         <div id="history"></div>
+    </div>
+
+    <!-- פאנל שליטה תחתון -->
+    <div id="control-panel">
         
-        <div id="input-line">
-            <span class="prompt">אלכס_ריבקין@מערכת:~$</span>
-            <span id="typed-text"></span><span class="cursor" id="cursor-el"></span>
+        <!-- כפתורים מהירים -->
+        <div id="quick-actions">
+            <button class="action-btn" onclick="runCmd('פרויקטים')">פרויקטים</button>
+            <button class="action-btn" onclick="runCmd('אודות')">אודות</button>
+            <button class="action-btn" onclick="runCmd('כישורים')">כישורים</button>
+            <button class="action-btn" onclick="runCmd('צור_קשר')">צור קשר</button>
+            <button class="action-btn" onclick="runCmd('נקה')" style="border-color:#555; color:#777;">נקה</button>
+        </div>
+
+        <!-- שורת הקלט -->
+        <div class="input-wrapper">
+            <span class="prompt-sign">~</span>
+            <input type="text" id="cmd-input" placeholder="הקלד פקודה..." autocomplete="off">
+            <button id="send-btn" onclick="handleSend()">↵</button>
         </div>
     </div>
 
-    <div id="status-bar">לחץ בכל מקום כדי להקליד</div>
-
-    <!-- שדה קלט נסתר -->
-    <input type="text" id="real-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-
     <script>
         const historyDiv = document.getElementById('history');
-        const inputLine = document.getElementById('input-line');
-        const realInput = document.getElementById('real-input');
-        const typedTextSpan = document.getElementById('typed-text');
-        const cursorEl = document.getElementById('cursor-el');
-        const statusBar = document.getElementById('status-bar');
+        const outputContainer = document.getElementById('terminal-output');
+        const inputField = document.getElementById('cmd-input');
 
-        let commandHistory = [];
-        let historyIndex = -1;
-
-        // --- תוכן המערכת ---
+        // תוכן המערכת
         const fileSystem = {
             'אודות': `שמי אלכס ריבקין, מעצב UX/UI.
-אני משלב חשיבה פילוסופית עם עיצוב פרקטי ליצירת מוצרים דיגיטליים משמעותיים.
-מתמחה במחקר משתמשים, ארכיטקטורת מידע ועיצוב ממשקים מורכבים.`,
-            
-            'כישורים': `סטטוס מיומנויות (Visual Mode):
+אני מתמחה בחיבור בין צרכי משתמש לעיצוב נקי ופונקציונלי.
+רקע: תואר שני בפילוסופיה (שעוזר לי לשאול את השאלות הנכונות).`,
 
-UX Research   [██████████--] 90%
-UI Design     [████████████] 100%
-Figma         [████████████] 100%
-Prototyping   [████████----] 80%
-HTML/CSS      [██████------] 60%
-Philosophy    [████████████] ∞
+            'כישורים': `יכולות מרכזיות:
+- UX Research & Strategy
+- UI Design (Figma, Sketch)
+- Prototyping (Protopie)
+- HTML/CSS Basics`,
 
-* הנתונים מבוססים על הערכה עצמית וניסיון בפועל.`,
+            'פרויקטים': `תיק עבודות:
 
-            'פרויקטים': `תיק עבודות - אלכס ריבקין:
-1. פרויקט_אלפא (Case Study) - אפיון מחדש למערכת CRM.
-2. בוט_מסחר (UI Design) - עיצוב דשבורד למסחר קריפטו.
-3. מאגר_ידע (Mobile App) - אפליקציה לניהול משחקי D&D.
+1. פרויקט_אלפא
+   אפיון מחדש למערכת CRM מורכבת.
+   
+2. בוט_מסחר
+   עיצוב דשבורד למערכת פיננסית.
 
-* הקלד את שם הפרויקט לפרטים נוספים (למשל: "פרויקט_אלפא").`,
+3. מאגר_ידע
+   אפליקציית מובייל לקהילת D&D.
 
-            'צור_קשר': `מייל: alex@example.com
-לינקדאין: linkedin.com/in/alex-rivkin
-גיטהאב: github.com/alex`,
-            
-            'פרויקט_אלפא': `--- פרויקט אלפא ---
-אפיון מחדש (Redesign) למערכת ניהול לקוחות.
-האתגר: פישוט תהליכים מורכבים למשתמשי קצה לא טכניים.
-תוצאה: שיפור של 30% בזמן ביצוע משימות.
-כלים: Figma, Axure.`,
-            
-            'בוט_מסחר': `--- בוט מסחר ---
-עיצוב ממשק משתמש למערכת מסחר אלגוריתמית.
-דגש על "Dark Mode" וויזואליזציה של נתונים בזמן אמת (Data Viz).
-יצירת שפה עיצובית שמשדרת אמינות ומהירות.`,
+* הקלד (או לחץ על) שם פרויקט לפרטים.`,
 
-            'עזרה': `פקודות זמינות:
-- אודות
-- כישורים
-- פרויקטים
-- צור_קשר
-- נקה`,
+            'צור_קשר': `בוא נדבר:
+מייל: alex@example.com
+לינקדאין: linkedin.com/in/alex`,
 
-            'gui': `שגיאה: המשתמש העדיף טקסט נקי על פני פיקסלים יפים. טוען את המציאות מחדש...`,
-            'למה': `כי עיצוב הוא לא רק איך שזה נראה, אלא איך שזה עובד. (סטיב ג'ובס, אבל ברוח פילוסופית).`,
-            'why': `To find clarity in chaos.`
+            'פרויקט_אלפא': `<div class="project-card">
+<strong>פרויקט אלפא (CRM Redesign)</strong>
+המטרה: פישוט תהליך קליטת לקוח.
+התוצאה: ירידה של 40% בזמן העבודה של הנציגים.
+כלים: Figma.
+</div>`,
+
+            'בוט_מסחר': `<div class="project-card">
+<strong>בוט מסחר (UI Dashboard)</strong>
+עיצוב ממשק כהה (Dark Mode) לניטור נתונים בזמן אמת.
+דגש על היררכיה ויזואלית וקריאות מהירה.
+</div>`,
+
+            'מאגר_ידע': `<div class="project-card">
+<strong>מאגר ידע (D&D App)</strong>
+עיצוב Mobile-First לאפליקציית עזר למשחקים.
+כולל מחקר משתמשים בקרב קהילות שחקנים.
+</div>`,
+
+            'נקה': 'CLEAR_SCREEN',
+            'עזרה': 'נסה ללחוץ על הכפתורים למטה.'
         };
 
+        // מילים נרדפות
         const aliases = {
-            'help': 'עזרה',
-            'ls': 'פרויקטים',
-            'list': 'פרויקטים',
             'projects': 'פרויקטים',
             'about': 'אודות',
             'contact': 'צור_קשר',
-            'skills': 'כישורים',
-            'clear': 'נקה',
-            'cls': 'נקה',
-            'gui': 'gui',
-            'why': 'why',
-            'למה': 'למה'
+            'help': 'עזרה',
+            'clear': 'נקה'
         };
 
-        // --- ניהול פוקוס מתקדם ---
-        function forceFocus() {
-            realInput.focus();
-            cursorEl.classList.remove('lost-focus');
-            statusBar.innerText = "מחובר | הקלד פקודה";
+        // פונקציה להוספת שורה ללוג
+        function print(html, type = 'line') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = html;
+            historyDiv.appendChild(div);
+            scrollToBottom();
         }
 
-        // לחיצה בכל מקום במסמך מחזירה פוקוס
-        document.addEventListener('click', forceFocus);
-        
-        // זיהוי איבוד פוקוס
-        realInput.addEventListener('blur', () => {
-            cursorEl.classList.add('lost-focus');
-            statusBar.innerText = "מנותק | לחץ כדי להקליד";
-        });
+        function scrollToBottom() {
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
 
-        // --- מנוע האתחול ---
-        async function bootSequence() {
+        // אתחול
+        async function boot() {
             const lines = [
-                "שם מלא: אלכס ריבקין",
-                "תפקיד: מעצב UX/UI",
-                "השכלה: MA PHILOSOPHY",
-                "--------------------------------",
-                "טוען סביבת עבודה...",
-                "הגישה אושרה. המערכת מוכנה."
+                "אלכס ריבקין / UX/UI Designer",
+                "טוען פרופיל משתמש...",
+                "השכלה: MA Philosophy",
+                "המערכת מוכנה."
             ];
 
             for (let line of lines) {
-                await typeLine(line);
+                print(`<span style="color:#559955">></span> ${line}`);
+                await new Promise(r => setTimeout(r, 300));
             }
             
-            inputLine.style.display = 'block';
-            forceFocus(); // פוקוס ראשוני
-            window.scrollTo(0, document.body.scrollHeight);
+            print("<div class='system-msg'>השתמש בכפתורים למטה לניווט מהיר</div>");
         }
 
-        function typeLine(text) {
-            return new Promise(resolve => {
-                const div = document.createElement('div');
-                div.className = 'line';
-                div.innerHTML = `<span style="color:#559955">></span> ${text}`;
-                historyDiv.appendChild(div);
-                window.scrollTo(0, document.body.scrollHeight);
-                setTimeout(resolve, Math.random() * 100 + 30); // קצת יותר מהר
-            });
-        }
+        // הרצת פקודה
+        function runCmd(cmdName) {
+            // ניקוי קלט
+            inputField.value = '';
+            inputField.focus();
 
-        // --- מנוע הטרמינל ---
-        
-        realInput.addEventListener('input', (e) => {
-            typedTextSpan.innerText = realInput.value;
-            window.scrollTo(0, document.body.scrollHeight);
-        });
+            const rawCmd = cmdName.trim();
+            if (!rawCmd) return;
 
-        realInput.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (commandHistory.length > 0) {
-                    historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
-                    const prevCmd = commandHistory[commandHistory.length - 1 - historyIndex];
-                    realInput.value = prevCmd;
-                    typedTextSpan.innerText = prevCmd;
-                }
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    const nextCmd = commandHistory[commandHistory.length - 1 - historyIndex];
-                    realInput.value = nextCmd;
-                    typedTextSpan.innerText = nextCmd;
-                } else if (historyIndex === 0) {
-                    historyIndex = -1;
-                    realInput.value = '';
-                    typedTextSpan.innerText = '';
-                }
-            } 
-            else if (e.key === 'Enter') {
-                const cmd = realInput.value.trim();
-                
-                if (cmd) {
-                    commandHistory.push(cmd);
-                    historyIndex = -1;
-                }
+            // עיבוד
+            const cmdKey = rawCmd.toLowerCase().replace(' ', '_');
+            const finalCmd = aliases[cmdKey] || cmdKey;
 
-                processCommand(cmd);
-                realInput.value = ''; 
-                typedTextSpan.innerText = '';
-                window.scrollTo(0, document.body.scrollHeight);
-            }
-        });
-
-        function processCommand(cmd) {
-            const cmdDiv = document.createElement('div');
-            cmdDiv.className = 'line';
-            cmdDiv.innerHTML = `<span class="prompt">אלכס_ריבקין@מערכת:~$</span> ${cmd}`;
-            historyDiv.appendChild(cmdDiv);
-
-            if (!cmd) return;
-
-            if (cmd.startsWith('sudo')) {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'line highlight';
-                errorDiv.innerText = `Nice try! אבל אין לך הרשאות שורש (Root) לחיים שלי.`;
-                historyDiv.appendChild(errorDiv);
+            // טיפול ב"נקה"
+            if (finalCmd === 'נקה' || finalCmd === 'clear_screen') {
+                historyDiv.innerHTML = '';
                 return;
             }
 
-            const lowerCmd = cmd.toLowerCase().replace(' ', '_');
-            const finalCmd = aliases[lowerCmd] || lowerCmd;
+            // הדפסת הפקודה שהמשתמש "כתב"
+            print(`~ ${rawCmd}`, 'cmd-echo');
 
-            if (finalCmd === 'נקה') {
-                historyDiv.innerHTML = '';
-            } else if (fileSystem[finalCmd]) {
-                const responseDiv = document.createElement('div');
-                responseDiv.className = 'line cmd-response';
-                responseDiv.innerText = fileSystem[finalCmd];
-                historyDiv.appendChild(responseDiv);
+            // הדפסת התשובה
+            if (fileSystem[finalCmd]) {
+                print(fileSystem[finalCmd]);
             } else {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'line error';
-                errorDiv.innerText = `פקודה לא מזוהה: "${cmd}". הקלד "עזרה" לרשימת האפשרויות.`;
-                historyDiv.appendChild(errorDiv);
+                print(`פקודה לא מזוהה: ${rawCmd}`, 'error');
             }
         }
 
-        setTimeout(bootSequence, 200);
+        // טיפול בשליחה מהמקלדת
+        function handleSend() {
+            runCmd(inputField.value);
+        }
+
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleSend();
+            }
+        });
+
+        // התחלה
+        boot();
 
     </script>
 </body>
