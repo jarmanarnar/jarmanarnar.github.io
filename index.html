@@ -1,171 +1,296 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex's Terminal</title>
+    <title>Chat with Alex</title>
     <style>
-        /* --- העיצוב המקורי שאהבת --- */
+        /* --- הגדרות בסיס ועיצוב ChatGPT Style --- */
         body {
-            background-color: #0d0d0d;
-            color: #33ff33; /* ירוק טרמינל מקורי */
-            font-family: 'Courier New', Courier, monospace;
+            background-color: #212121; /* אפור כהה מאוד */
+            color: #ececec;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* מיכל ראשי */
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #212121;
+        }
+
+        /* כותרת עליונה */
+        header {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #aaa;
+        }
+
+        /* אזור ההודעות */
+        #chat-history {
+            flex: 1;
+            overflow-y: auto;
             padding: 20px;
-            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* עיצוב הודעה */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
             line-height: 1.5;
-            padding-bottom: 100px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
         }
 
-        #terminal {
-            max-width: 900px;
-            margin: 0 auto;
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
         }
 
-        p { margin: 5px 0; }
-
-        /* אפקטים של טקסט */
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 16px;
-            background-color: #33ff33;
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
+        /* סגנון לבוט */
+        .message.bot .avatar {
+            background-color: #10a37f; /* הירוק של ChatGPT */
+            color: white;
+        }
+        
+        /* סגנון למשתמש */
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        .message.user .avatar {
+            background-color: #555;
+            color: white;
+        }
+        .message.user .content {
+            background-color: #333;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border-top-right-radius: 2px;
         }
 
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* עיצוב הקישורים שיראו כמו חלק מהקוד */
-        .command-link {
-            text-decoration: none;
-            color: #fff; /* לבן כדי לבלוט קצת */
-            cursor: pointer;
-            border-bottom: 1px dashed #444;
-            transition: color 0.2s;
+        .content {
+            padding-top: 4px;
+            max-width: 80%;
         }
 
-        .command-link:hover {
-            color: #33ff33;
-            border-bottom: 1px solid #33ff33;
-            text-shadow: 0 0 8px rgba(51, 255, 51, 0.6);
-        }
-
-        /* הפרדה ויזואלית לתוצאות */
-        .result-block {
+        /* כפתורי בחירה (כמו הצעות) */
+        .options-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
             margin-top: 10px;
-            margin-bottom: 20px;
-            padding-left: 15px;
-            border-left: 2px solid #333;
-            color: #ccc; /* אפור בהיר לתוכן */
         }
 
-        .highlight { color: #feca57; } /* צבע להדגשות */
+        .option-btn {
+            background-color: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
 
+        .option-btn:hover {
+            background-color: #333;
+            border-color: #bbb;
+            color: white;
+        }
+
+        /* כרטיסייה של פרויקט בתוך הצ'אט */
+        .project-card {
+            background-color: #2f2f2f;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .project-card h3 { margin: 0 0 5px 0; color: #fff; }
+        .project-card p { margin: 0; font-size: 0.9rem; color: #aaa; }
+        .project-card .status { 
+            display: inline-block; margin-top: 10px; 
+            font-size: 0.75rem; padding: 2px 6px; 
+            border-radius: 4px; background: #444; 
+        }
+
+        /* אינדיקטור הקלדה (שלוש נקודות) */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px;
+            display: none; /* מוסתר כברירת מחדל */
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #666;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 
+            0%, 80%, 100% { transform: scale(0); } 
+            40% { transform: scale(1); } 
+        }
+
+        /* אזור הקלדה תחתון (לא פעיל באמת, רק ליופי כרגע) */
+        .input-area {
+            padding: 20px;
+            background-color: #212121;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+        .fake-input {
+            flex: 1;
+            background-color: #40414f;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            color: #fff;
+            outline: none;
+        }
     </style>
 </head>
 <body>
 
-    <div id="terminal">
-        <div id="history"></div>
+    <div class="chat-container">
+        <header>AlexGPT 4.0 (Personal Model)</header>
         
-        <div id="active-line" style="margin-top:20px;">
-            <span style="color:#33ff33;">root@alex-lab:~#</span> 
-            <span id="typing-area"></span><span class="cursor"></span>
+        <div id="chat-history">
+            <div class="message bot">
+                <div class="avatar">AI</div>
+                <div class="content">
+                    שלום! אני המודל הדיגיטלי של אלכס. <br>
+                    אני כאן כדי להציג לך את העבודות שלו, הרקע שלו, ותחומי העניין שלו בלוגיקה ו-AI.
+                    <br><br>
+                    מה מעניין אותך לדעת?
+                    
+                    <div class="options-container" id="initial-options">
+                        <button class="option-btn" onclick="ask('projects')">תראה לי פרויקטים</button>
+                        <button class="option-btn" onclick="ask('about')">מי זה אלכס?</button>
+                        <button class="option-btn" onclick="ask('contact')">איך יוצרים קשר?</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typing">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" class="fake-input" placeholder="Select an option above..." disabled>
         </div>
     </div>
 
     <script>
-        const historyDiv = document.getElementById('history');
-        const typingArea = document.getElementById('typing-area');
+        const chatHistory = document.getElementById('chat-history');
+        const typingIndicator = document.getElementById('typing');
 
-        // --- תוכן הפרויקטים ---
-        const projects = {
-            'ai': `
-STATUS: <span class="highlight">Research Phase</span>
-DESC: Interface bridging Formal Logic & LLMs.
-STACK: Python, OpenAI API.
-LOG: Analyzing token patterns... [DONE]
-`,
-            'finance': `
-STATUS: <span class="highlight">Planned</span>
-DESC: Algorithmic Trading Dashboard.
-TARGET: Real-time latency visualization.
-`,
-            'dnd': `
-STATUS: <span class="highlight">Active</span>
-DESC: Dungeon Mind - RPG Knowledge Base.
-NOTE: Helping DMs manage complex lore.
-`,
-            'contact': `
-EMAIL: alex@example.com
-LINKEDIN: /in/alex-designer
-MSG: "Let's build something."
-`
-        };
+        // פונקציה ראשית שמנהלת את השיחה
+        function ask(topic) {
+            // 1. הסתרת הכפתורים הקודמים כדי שהשיחה תראה נקייה
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.style.display = 'none');
 
-        // --- שלב 1: האתחול (בדיוק כמו שאהבת) ---
-        const bootText = [
-            "Booting kernel...",
-            "Loading Alex's profile...",
-            "System ready."
-        ];
-        
-        let lineIndex = 0;
+            // 2. הוספת הודעה מצד המשתמש
+            let userText = "";
+            if(topic === 'projects') userText = "תראה לי פרויקטים בבקשה";
+            if(topic === 'about') userText = "ספר לי קצת על אלכס";
+            if(topic === 'contact') userText = "אני רוצה ליצור קשר";
+            if(topic === 'ai_logic') userText = "ספר לי על מחקר AI ולוגיקה";
 
-        function boot() {
-            if (lineIndex < bootText.length) {
-                addToHistory("> " + bootText[lineIndex]);
-                lineIndex++;
-                setTimeout(boot, 150);
-            } else {
-                showMenu();
-            }
-        }
+            addMessage('user', userText);
 
-        // פונקציה להוספת שורה להיסטוריה
-        function addToHistory(htmlContent) {
-            const p = document.createElement('div');
-            p.style.marginBottom = "5px";
-            p.innerHTML = htmlContent;
-            historyDiv.appendChild(p);
-            window.scrollTo(0, document.body.scrollHeight); // גלילה למטה
-        }
+            // 3. הצגת אנימציית הקלדה
+            typingIndicator.style.display = 'flex';
+            chatHistory.scrollTop = chatHistory.scrollHeight;
 
-        // --- שלב 2: הצגת התפריט (כחלק מההיסטוריה) ---
-        function showMenu() {
-            addToHistory("<br><span style='color:#fff'>AVAILABLE COMMANDS (Click to run):</span>");
-            addToHistory(`[ <span class="command-link" onclick="run('ai')">run project_alpha.exe</span> ] -- AI & Logic`);
-            addToHistory(`[ <span class="command-link" onclick="run('finance')">run trading_bot.sh</span> ] --- Finance UX`);
-            addToHistory(`[ <span class="command-link" onclick="run('dnd')">run dungeon_mind.db</span> ] -- RPG Tools`);
-            addToHistory(`[ <span class="command-link" onclick="run('contact')">run contact_info.txt</span> ] -- Connect`);
-        }
-
-        // --- שלב 3: הרצת פקודה (בלי למחוק את המסך!) ---
-        function run(projectId) {
-            // 1. מדמה כתיבה של המשתמש
-            typingArea.textContent = " execute " + projectId;
-            
+            // 4. השהיה קטנה (כאילו המחשב חושב) ואז תשובה
             setTimeout(() => {
-                // 2. מעביר את הפקודה להיסטוריה
-                addToHistory(`<span style="color:#33ff33;">root@alex-lab:~#</span> execute ${projectId}`);
-                typingArea.textContent = ""; // מנקה את השורה למטה
-
-                // 3. מציג את התוצאה
-                if (projects[projectId]) {
-                    addToHistory(`<div class="result-block">${projects[projectId]}</div>`);
-                }
-
-                // 4. מציג שוב את התפריט כדי שיהיה נוח
-                // (אופציונלי - אם אתה רוצה שזה יראה נקי יותר אפשר למחוק את השורה הבאה)
-                // showMenu(); 
-                
-            }, 300);
+                typingIndicator.style.display = 'none';
+                botResponse(topic);
+            }, 1000); // מחכה שנייה
         }
 
-        // התחלה
-        setTimeout(boot, 500);
+        // הוספת הודעה ללוג
+        function addMessage(sender, htmlContent) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender);
+            
+            const avatar = document.createElement('div');
+            avatar.classList.add('avatar');
+            avatar.innerText = sender === 'bot' ? 'AI' : 'Me';
 
-    </script>
-</body>
-</html>
+            const content = document.createElement('div');
+            content.classList.add('content');
+            content.innerHTML = htmlContent;
+
+            if (sender === 'bot') {
+                msgDiv.appendChild(avatar);
+                msgDiv.appendChild(content);
+            } else {
+                msgDiv.appendChild(content); // למשתמש הסדר הפוך ב-CSS אבל המבנה זהה
+                msgDiv.appendChild(avatar);
+            }
+
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight; // גלילה למטה
+        }
+
+        // התשובות של הבוט
+        function botResponse(topic) {
+            let responseHtml = "";
+            let nextOptions = "";
+
+            if (topic === 'projects') {
+                responseHtml = `
+                    הנה כמה פרויקטים נבחרים מהתקופה האחרונה:
+                    
+                    <div class="project-card">
+                        <h3>Dungeon Mind</h3>
+                        <p>כלי לניהול ידע מורכב ל-Dungeon Masters.</p>
+                        <span class="status">בפיתוח</span>
+                    </div>
+
+                    <div class="project-card">
+                        <h3>Market Tracker UX</h3>
+                        <p>דשבורד מסחר באלגוריתמים.</p>
+                        <span class="status">קונספט</span>
+                    </div>
+
+                    <div class="project-card">
+                        <h3>AI & Logic Research</h3>
+                        <p>מחקר על הנגשת לוגיקה פורמלית במודלי שפה.</p>
+                        <span class="status">מחקר</span>
