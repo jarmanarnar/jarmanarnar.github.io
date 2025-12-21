@@ -1,296 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with Alex</title>
+    <title>דף סיכום קורנל - עברית</title>
     <style>
-        /* --- הגדרות בסיס ועיצוב ChatGPT Style --- */
+        /* הגדרות בסיס */
         body {
-            background-color: #212121; /* אפור כהה מאוד */
-            color: #ececec;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0; /* רקע אפור מסביב לדף */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
         }
 
-        /* מיכל ראשי */
-        .chat-container {
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background-color: #212121;
+        /* עיצוב הדף עצמו (A4) */
+        .cornell-page {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-rows: 100px 1fr 150px; /* גובה: כותרת, תוכן, סיכום */
+            border: 1px solid #ccc;
         }
 
-        /* כותרת עליונה */
+        /* 1. כותרת עליונה */
         header {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #333;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #aaa;
-        }
-
-        /* אזור ההודעות */
-        #chat-history {
-            flex: 1;
-            overflow-y: auto;
+            border-bottom: 2px solid #000;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            justify-content: space-between;
         }
 
-        /* עיצוב הודעה */
-        .message {
+        .header-top {
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            line-height: 1.5;
-            opacity: 0;
-            animation: fadeIn 0.3s forwards;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
 
-        @keyframes fadeIn { to { opacity: 1; } }
-
-        .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .title-area {
+            font-size: 24px;
             font-weight: bold;
-            font-size: 14px;
-            flex-shrink: 0;
         }
 
-        /* סגנון לבוט */
-        .message.bot .avatar {
-            background-color: #10a37f; /* הירוק של ChatGPT */
-            color: white;
+        /* 2. אזור התוכן המרכזי (מחולק ל-2 עמודות) */
+        .main-content {
+            display: grid;
+            grid-template-columns: 30% 70%; /* יחס קורנל קלאסי */
+        }
+
+        /* עמודת רמזים/שאלות (ימין) */
+        .cues-column {
+            border-left: 2px solid #000; /* קו מפריד משמאל */
+            padding: 15px;
+            color: #d32f2f; /* צבע אדמדם להדגשת שאלות */
+        }
+
+        /* עמודת הסיכום המרכזי (שמאל) */
+        .notes-column {
+            padding: 15px;
+            /* הוספת שורות רקע לכתיבה (אופציונלי) */
+            background-image: repeating-linear-gradient(white 0px, white 29px, #e5e5e5 30px);
+            line-height: 30px;
+        }
+
+        /* כותרות פנימיות קטנות להכוונה */
+        h3.section-label {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 3. סיכום תחתון */
+        footer {
+            border-top: 2px solid #000;
+            padding: 20px;
+            background-color: #fff9c4; /* רקע צהבהב עדין להדגשת הסיכום */
+        }
+
+        /* אלמנטים לעריכה (כדי שתוכל לכתוב בדפדפן אם תרצה) */
+        [contenteditable="true"] {
+            outline: none;
+            min-height: 20px;
         }
         
-        /* סגנון למשתמש */
-        .message.user {
-            flex-direction: row-reverse;
-        }
-        .message.user .avatar {
-            background-color: #555;
-            color: white;
-        }
-        .message.user .content {
-            background-color: #333;
-            padding: 10px 15px;
-            border-radius: 12px;
-            border-top-right-radius: 2px;
-        }
-
-        .content {
-            padding-top: 4px;
-            max-width: 80%;
-        }
-
-        /* כפתורי בחירה (כמו הצעות) */
-        .options-container {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .option-btn {
-            background-color: transparent;
-            border: 1px solid #444;
-            color: #ccc;
-            padding: 8px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .option-btn:hover {
-            background-color: #333;
-            border-color: #bbb;
-            color: white;
-        }
-
-        /* כרטיסייה של פרויקט בתוך הצ'אט */
-        .project-card {
-            background-color: #2f2f2f;
-            border: 1px solid #444;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
-            width: 100%;
-            max-width: 400px;
-        }
-        .project-card h3 { margin: 0 0 5px 0; color: #fff; }
-        .project-card p { margin: 0; font-size: 0.9rem; color: #aaa; }
-        .project-card .status { 
-            display: inline-block; margin-top: 10px; 
-            font-size: 0.75rem; padding: 2px 6px; 
-            border-radius: 4px; background: #444; 
-        }
-
-        /* אינדיקטור הקלדה (שלוש נקודות) */
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 10px;
-            display: none; /* מוסתר כברירת מחדל */
-        }
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: #666;
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 
-            0%, 80%, 100% { transform: scale(0); } 
-            40% { transform: scale(1); } 
-        }
-
-        /* אזור הקלדה תחתון (לא פעיל באמת, רק ליופי כרגע) */
-        .input-area {
-            padding: 20px;
-            background-color: #212121;
-            border-top: 1px solid #333;
-            display: flex;
-            gap: 10px;
-        }
-        .fake-input {
-            flex: 1;
-            background-color: #40414f;
-            border: none;
-            border-radius: 6px;
-            padding: 12px;
-            color: #fff;
-            outline: none;
+        /* התאמה להדפסה */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .cornell-page {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                height: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <header>AlexGPT 4.0 (Personal Model)</header>
-        
-        <div id="chat-history">
-            <div class="message bot">
-                <div class="avatar">AI</div>
-                <div class="content">
-                    שלום! אני המודל הדיגיטלי של אלכס. <br>
-                    אני כאן כדי להציג לך את העבודות שלו, הרקע שלו, ותחומי העניין שלו בלוגיקה ו-AI.
-                    <br><br>
-                    מה מעניין אותך לדעת?
-                    
-                    <div class="options-container" id="initial-options">
-                        <button class="option-btn" onclick="ask('projects')">תראה לי פרויקטים</button>
-                        <button class="option-btn" onclick="ask('about')">מי זה אלכס?</button>
-                        <button class="option-btn" onclick="ask('contact')">איך יוצרים קשר?</button>
-                    </div>
-                </div>
+    <div class="cornell-page">
+        <header>
+            <div class="header-top">
+                <div contenteditable="true" style="width: 60%">נושא השיעור / הקורס: ________________</div>
+                <div contenteditable="true">תאריך: __/__/____</div>
             </div>
+            <div contenteditable="true" class="title-area">כותרת הנושא: לחץ כאן לכתיבה...</div>
+        </header>
+
+        <div class="main-content">
+            
+            <aside class="cues-column">
+                <h3 class="section-label">שאלות / נקודות מפתח</h3>
+                <div contenteditable="true">
+                    <ul>
+                        <li>מושג מרכזי 1</li>
+                        <br><br>
+                        <li>שאלה חשובה?</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <section class="notes-column">
+                <h3 class="section-label">הערות ופירוט</h3>
+                <div contenteditable="true">
+                    כאן כותבים את תוכן ההרצאה...
+                    <br>
+                    (השורות ברקע עוזרות לשמור על סדר)
+                </div>
+            </section>
         </div>
 
-        <div class="typing-indicator" id="typing">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-        </div>
-
-        <div class="input-area">
-            <input type="text" class="fake-input" placeholder="Select an option above..." disabled>
-        </div>
+        <footer>
+            <h3 class="section-label">סיכום (שורה תחתונה)</h3>
+            <div contenteditable="true">
+                בשיעור זה למדנו ש... (כתוב כאן 2-3 משפטים שמסכמים את כל הדף)
+            </div>
+        </footer>
     </div>
 
-    <script>
-        const chatHistory = document.getElementById('chat-history');
-        const typingIndicator = document.getElementById('typing');
-
-        // פונקציה ראשית שמנהלת את השיחה
-        function ask(topic) {
-            // 1. הסתרת הכפתורים הקודמים כדי שהשיחה תראה נקייה
-            const buttons = document.querySelectorAll('.option-btn');
-            buttons.forEach(btn => btn.style.display = 'none');
-
-            // 2. הוספת הודעה מצד המשתמש
-            let userText = "";
-            if(topic === 'projects') userText = "תראה לי פרויקטים בבקשה";
-            if(topic === 'about') userText = "ספר לי קצת על אלכס";
-            if(topic === 'contact') userText = "אני רוצה ליצור קשר";
-            if(topic === 'ai_logic') userText = "ספר לי על מחקר AI ולוגיקה";
-
-            addMessage('user', userText);
-
-            // 3. הצגת אנימציית הקלדה
-            typingIndicator.style.display = 'flex';
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-
-            // 4. השהיה קטנה (כאילו המחשב חושב) ואז תשובה
-            setTimeout(() => {
-                typingIndicator.style.display = 'none';
-                botResponse(topic);
-            }, 1000); // מחכה שנייה
-        }
-
-        // הוספת הודעה ללוג
-        function addMessage(sender, htmlContent) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', sender);
-            
-            const avatar = document.createElement('div');
-            avatar.classList.add('avatar');
-            avatar.innerText = sender === 'bot' ? 'AI' : 'Me';
-
-            const content = document.createElement('div');
-            content.classList.add('content');
-            content.innerHTML = htmlContent;
-
-            if (sender === 'bot') {
-                msgDiv.appendChild(avatar);
-                msgDiv.appendChild(content);
-            } else {
-                msgDiv.appendChild(content); // למשתמש הסדר הפוך ב-CSS אבל המבנה זהה
-                msgDiv.appendChild(avatar);
-            }
-
-            chatHistory.appendChild(msgDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight; // גלילה למטה
-        }
-
-        // התשובות של הבוט
-        function botResponse(topic) {
-            let responseHtml = "";
-            let nextOptions = "";
-
-            if (topic === 'projects') {
-                responseHtml = `
-                    הנה כמה פרויקטים נבחרים מהתקופה האחרונה:
-                    
-                    <div class="project-card">
-                        <h3>Dungeon Mind</h3>
-                        <p>כלי לניהול ידע מורכב ל-Dungeon Masters.</p>
-                        <span class="status">בפיתוח</span>
-                    </div>
-
-                    <div class="project-card">
-                        <h3>Market Tracker UX</h3>
-                        <p>דשבורד מסחר באלגוריתמים.</p>
-                        <span class="status">קונספט</span>
-                    </div>
-
-                    <div class="project-card">
-                        <h3>AI & Logic Research</h3>
-                        <p>מחקר על הנגשת לוגיקה פורמלית במודלי שפה.</p>
-                        <span class="status">מחקר</span>
+</body>
+</html>
