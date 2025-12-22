@@ -12,6 +12,7 @@
             --highlight: #ffffff;
             --ai-color: #aaddff;
             --tool-bg: #1a1a1a;
+            --flame: #ffcc00;
         }
 
         /* הגדרת רקע כללי לדף */
@@ -63,14 +64,15 @@
         .lang-opt:hover { color: var(--fg); }
         .lang-opt.active { color: var(--highlight); font-weight: bold; text-decoration: underline; }
 
-        .tree-btn {
+        /* כפתורי חגים */
+        .holiday-btn {
             font-size: 1.2em;
             cursor: pointer;
             transition: all 0.3s;
             filter: grayscale(100%);
-            margin: 0 10px;
+            margin: 0 5px;
         }
-        .tree-btn:hover, .tree-btn.active {
+        .holiday-btn:hover, .holiday-btn.active {
             filter: grayscale(0%);
             text-shadow: 0 0 10px #fff;
             transform: scale(1.1);
@@ -119,7 +121,6 @@
             padding: 10px;
             border: 1px solid rgba(51, 255, 51, 0.1);
             background: rgba(0,0,0,0.3);
-            /* מאפשר קליק על האזור הריק כדי לפקס את האינפוט */
             cursor: text;
         }
 
@@ -128,7 +129,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            padding-bottom: 40px; /* מקום לגלילה נוחה */
+            padding-bottom: 40px; 
         }
 
         /* --- עיצוב שורת הקלט הדינמית בתוך הטרמינל --- */
@@ -161,9 +162,83 @@
             min-width: 50px;
         }
 
-        /* שאר האלמנטים */
+        /* --- שלג --- */
         .snowflake { position: fixed; top: -10px; color: #fff; pointer-events: none; z-index: 9999; animation: fall linear infinite; }
         @keyframes fall { to { transform: translateY(100vh); } }
+
+        /* --- חנוכייה קטנה --- */
+        .menorah-container {
+            position: fixed;
+            bottom: 20px;
+            /* ברירת מחדל (RTL - עברית): צד שמאל */
+            left: 20px;
+            right: auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px; /* רווח צפוף יותר */
+            z-index: 9998;
+            pointer-events: none; 
+            background: rgba(0,0,0,0.8);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(51, 255, 51, 0.2);
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* באנגלית/LTR: צד ימין */
+        html[dir="ltr"] .menorah-container {
+            right: 20px;
+            left: auto;
+        }
+
+        .menorah-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .candle {
+            width: 6px; /* נר דק */
+            height: 25px; /* נר נמוך */
+            background: var(--dim);
+            border: 1px solid var(--bg);
+            position: relative;
+            cursor: pointer;
+            transition: height 0.3s, background-color 0.3s;
+        }
+
+        .candle:hover { background-color: var(--fg); }
+        
+        /* שמש */
+        .candle.shamash { 
+            height: 35px; 
+            margin: 0 4px;
+            background: #555;
+        }
+
+        .flame {
+            width: 8px;
+            height: 12px;
+            background: var(--flame);
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -12px;
+            left: -1px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 0 5px var(--flame);
+            animation: flicker 0.1s infinite alternate;
+            transform-origin: center bottom;
+        }
+
+        .candle.lit .flame { opacity: 1; }
+
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-2deg); }
+            100% { transform: scale(1.1) rotate(2deg); opacity: 0.8; }
+        }
 
         .text-content { white-space: pre-wrap; line-height: 1.6; }
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
@@ -195,7 +270,7 @@
         
         @media print {
             body { background: white; color: black; max-width: 100%; border: none; overflow: visible; height: auto; display: block; }
-            .top-status-bar, .tools-bar, header, .nav, .terminal-input-line, .back-link { display: none !important; }
+            .top-status-bar, .tools-bar, header, .nav, .terminal-input-line, .back-link, .menorah-container { display: none !important; }
             #terminal { border: none; overflow: visible; background: transparent; }
             .card { border: 1px solid #ccc; color: black; background: white; page-break-inside: avoid; }
             .chat-msg { border-bottom: 1px solid #eee; padding-bottom: 5px; color: black !important; }
@@ -219,14 +294,18 @@
                 <span class="lang-opt" id="lang-ru" onclick="setLang('ru')">RU</span>
             </div>
             
+            <div style="margin: 0 10px; color:var(--dim)">|</div>
+
             <!-- כפתור העץ -->
-            <span class="tree-btn" onclick="toggleSnow()" title="Toggle Snow">🎄</span>
+            <span class="holiday-btn tree-btn" onclick="toggleSnow()" title="Toggle Snow">🎄</span>
+            <!-- כפתור חנוכייה -->
+            <span class="holiday-btn menorah-btn" onclick="toggleMenorah()" title="Toggle Menorah">🕎</span>
         </div>
     </div>
 
     <header>
-        <h1 onclick="run('about')">ALEX RIVKIN</h1>
-        <div class="subtitle">Product Designer & Philosopher</div>
+        <h1 id="header-title" onclick="run('about')">אלכס ריבקין</h1>
+        <div id="header-subtitle" class="subtitle">מעצב מוצר ופילוסוף</div>
         
         <nav class="nav">
             <span class="nav-item" id="nav-about" onclick="run('about')">אודות</span>
@@ -242,8 +321,7 @@
     <!-- סרגל כלים לתוכן -->
     <div class="tools-bar">
         <div class="tool-btn" onclick="clearChat()" title="נקה מסך / Clear Screen">
-            <span class="tool-icon">🗑️</span>
-            <span class="tool-text">Clear</span>
+            <span class="tool-text" id="clear-btn-text">[ניקוי]</span>
         </div>
     </div>
 
@@ -251,6 +329,24 @@
     <div id="terminal" onclick="focusInput()">
         <div id="output"></div>
         <!-- שורת הקלט תיווצר כאן דינמית -->
+    </div>
+
+    <!-- קונטיינר לחנוכייה -->
+    <div id="menorah-display" class="menorah-container">
+        <!-- נרות ימין -->
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        
+        <!-- שמש -->
+        <div class="candle shamash" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        
+        <!-- נרות שמאל -->
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
+        <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
     </div>
 
     <script>
@@ -273,6 +369,9 @@
 
         const resources = {
             he: {
+                title: 'אלכס ריבקין',
+                subtitle: 'מעצב מוצר ופילוסוף',
+                clear: '[ניקוי]',
                 nav: { about: 'אודות', projects: 'פרויקטים', articles: 'מאמרים', cv: 'CV' },
                 prompt_sign: 'Alex_AI:~',
                 prompt_context: {
@@ -290,6 +389,9 @@
                 project_gamma: `<div class="text-content fade-in">--- פרויקט גאמא (D&D) ---<br><br>תיאור:<br>אפליקציית עזר למשחקי מבוכים ודרקונים.<br><br>גישה עיצובית:<br>Mobile First. שימוש באלמנטים של משחוק (Gamification) כדי להגביר מעורבות.<br><br><div class="back-link" onclick="run('projects')">< חזור לרשימת הפרויקטים</div></div>`
             },
             en: {
+                title: 'ALEX RIVKIN',
+                subtitle: 'Product Designer & Philosopher',
+                clear: '[CLEAR]',
                 nav: { about: 'About', projects: 'Projects', articles: 'Articles', cv: 'CV' },
                 prompt_sign: 'Alex_AI:~',
                 prompt_context: { about: 'Command / Question...', projects: 'Ask about projects...', articles: 'Ask about articles...', cv: 'Ask about experience...' },
@@ -302,6 +404,9 @@
                 project_gamma: `<div class="text-content fade-in">--- Project Gamma (D&D) ---<br><br>Description:<br>Companion app for Dungeons & Dragons.<br><br>Design Approach:<br>Mobile First. Using Gamification elements to increase engagement.<br><br><div class="back-link" onclick="run('projects')">< Back to Projects</div></div>`
             },
             ru: {
+                title: 'АЛЕКС РИВКИН',
+                subtitle: 'Продуктовый Дизайнер и Философ',
+                clear: '[ОЧИСТИТЬ]',
                 nav: { about: 'Обо мне', projects: 'Проекты', articles: 'Статьи', cv: 'CV' },
                 prompt_sign: 'Alex_AI:~',
                 prompt_context: { about: 'Команда / Вопрос...', projects: 'Спросите о проектах...', articles: 'Спросите о статьях...', cv: 'Спросите об опыте...' },
@@ -597,6 +702,11 @@
             document.getElementById('nav-articles').innerText = resources[lang].nav.articles;
             document.getElementById('nav-cv').innerText = resources[lang].nav.cv;
             
+            // עדכון כותרות
+            document.getElementById('header-title').innerText = resources[lang].title;
+            document.getElementById('header-subtitle').innerText = resources[lang].subtitle;
+            document.getElementById('clear-btn-text').innerText = resources[lang].clear;
+
             run(currentKey);
         }
 
@@ -610,6 +720,24 @@
                 f.style.left = Math.random() * 100 + 'vw'; f.style.opacity = Math.random(); f.style.fontSize = (Math.random() * 15 + 10) + 'px'; f.style.animationDuration = (Math.random() * 3 + 2) + 's';
                 document.body.appendChild(f); setTimeout(() => f.remove(), 5000);
             }, 100); }
+        }
+
+        // חנוכייה
+        function toggleMenorah() {
+            const menorah = document.getElementById('menorah-display');
+            const btn = document.querySelector('.menorah-btn');
+            
+            if (menorah.classList.contains('visible')) {
+                menorah.classList.remove('visible');
+                btn.classList.remove('active');
+            } else {
+                menorah.classList.add('visible');
+                btn.classList.add('active');
+            }
+        }
+
+        function toggleCandle(candleEl) {
+            candleEl.classList.toggle('lit');
         }
 
         run('about');
