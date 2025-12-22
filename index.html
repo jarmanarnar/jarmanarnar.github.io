@@ -12,11 +12,17 @@
             --highlight: #ffffff;
         }
 
+        /* הגדרת רקע כללי לדף */
+        html {
+            background-color: var(--bg);
+            height: 100%;
+        }
+
         body {
             background-color: var(--bg);
             color: var(--fg);
             font-family: 'Consolas', 'Courier New', monospace;
-            margin: 0;
+            margin: 0 auto; /* מרכוז */
             padding: 20px;
             font-size: 16px;
             line-height: 1.5;
@@ -25,6 +31,14 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            
+            /* הגבלת רוחב למסכים גדולים */
+            max-width: 900px; 
+            width: 100%;
+            
+            /* קווים עדינים בצדדים לתיחום האזור */
+            border-right: 1px solid rgba(51, 255, 51, 0.05);
+            border-left: 1px solid rgba(51, 255, 51, 0.05);
         }
 
         #terminal {
@@ -48,10 +62,39 @@
         .subtitle { color: var(--dim); font-size: 0.9em; margin-bottom: 10px; }
 
         /* תפריט */
-        .nav { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         .nav-item { cursor: pointer; color: var(--fg); font-weight: bold; transition: 0.2s; }
         .nav-item:hover { color: var(--highlight); text-decoration: underline; }
         .nav-sep { color: var(--dim); }
+        
+        /* כפתור העץ */
+        .tree-btn {
+            margin-right: auto; /* דוחף את הכפתור לקצה השמאלי */
+            font-size: 1.2em;
+            cursor: pointer;
+            filter: grayscale(100%);
+            transition: all 0.3s;
+        }
+        .tree-btn:hover, .tree-btn.active {
+            filter: grayscale(0%);
+            text-shadow: 0 0 10px #fff;
+            transform: scale(1.1);
+        }
+
+        /* שלג */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #fff;
+            user-select: none;
+            pointer-events: none;
+            z-index: 9999;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
 
         /* אזור פלט */
         #output {
@@ -105,26 +148,6 @@
             cursor: pointer;
         }
         .back-link:hover { color: var(--highlight); border-color: var(--highlight); }
-
-        /* שורת קלט */
-        .input-line {
-            display: flex;
-            align-items: center;
-            margin-top: auto; 
-            padding-top: 10px;
-            border-top: 1px dashed var(--dim);
-            flex-shrink: 0;
-        }
-        .prompt { margin-left: 8px; color: var(--fg); font-weight: bold; }
-        input {
-            background: transparent;
-            border: none;
-            color: var(--highlight);
-            font-family: inherit;
-            font-size: inherit;
-            flex: 1;
-            outline: none;
-        }
         
         /* אנימציה */
         .fade-in { animation: fadeIn 0.3s ease-in; }
@@ -132,7 +155,7 @@
 
     </style>
 </head>
-<body onclick="document.getElementById('cmd').focus()">
+<body>
 
     <header>
         <h1 onclick="run('אודות')">ALEX RIVKIN</h1>
@@ -144,6 +167,9 @@
             <span class="nav-item" onclick="run('מאמרים')">מאמרים</span>
             <span class="nav-sep">|</span>
             <span class="nav-item" onclick="run('צור_קשר')">צור קשר</span>
+            
+            <!-- כפתור העץ -->
+            <span class="tree-btn" onclick="toggleSnow()" title="לחץ לשלג">🎄</span>
         </nav>
     </header>
 
@@ -151,14 +177,8 @@
         <div id="output"></div>
     </div>
 
-    <div class="input-line">
-        <span class="prompt">אלכס_טרמינל:~</span>
-        <input type="text" id="cmd" autocomplete="off" spellcheck="false">
-    </div>
-
     <script>
         const output = document.getElementById('output');
-        const input = document.getElementById('cmd');
 
         const content = {
             'אודות': `<div class="text-content fade-in">שמי אלכס ריבקין.
@@ -247,29 +267,57 @@ Mobile First. שימוש באלמנטים של משחוק (Gamification) כדי 
 </div>`
         };
 
-        function typeText(text, container) {
-            // במקום הקלדה איטית שעלולה לשבור HTML מורכב, פשוט נכניס את התוכן
-            // האנימציה fade-in ב-CSS תעשה את העבודה
-            container.innerHTML = text;
-        }
-
         function run(key) {
-            input.value = '';
-            input.focus();
-
             if (content[key]) {
                 output.innerHTML = content[key];
             } else {
-                output.innerHTML = `<div style="color:#ff5555; margin-top:10px;">פקודה לא מזוהה: ${key}</div>`;
+                output.innerHTML = `<div style="color:#ff5555; margin-top:10px;">תוכן לא נמצא: ${key}</div>`;
             }
         }
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const val = input.value.trim().replace(' ', '_');
-                run(val || 'אודות');
+        // --- לוגיקה לשלג ---
+        let snowInterval = null;
+
+        function toggleSnow() {
+            const btn = document.querySelector('.tree-btn');
+            
+            if (snowInterval) {
+                // כיבוי שלג
+                clearInterval(snowInterval);
+                snowInterval = null;
+                btn.classList.remove('active');
+                document.querySelectorAll('.snowflake').forEach(el => el.remove());
+            } else {
+                // הדלקת שלג
+                btn.classList.add('active');
+                snowInterval = setInterval(createSnowflake, 100);
             }
-        });
+        }
+
+        function createSnowflake() {
+            const flake = document.createElement('div');
+            flake.classList.add('snowflake');
+            // רנדומליזציה של צורת השלג
+            flake.innerText = Math.random() > 0.5 ? '*' : '.';
+            
+            // מיקום אקראי לרוחב המסך
+            flake.style.left = Math.random() * 100 + 'vw';
+            
+            // גודל ושקיפות אקראיים
+            flake.style.opacity = Math.random();
+            flake.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            
+            // מהירות נפילה אקראית
+            const duration = Math.random() * 3 + 2;
+            flake.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(flake);
+            
+            // ניקוי אחרי שהאנימציה מסתיימת
+            setTimeout(() => {
+                flake.remove();
+            }, duration * 1000);
+        }
 
         // אתחול
         run('אודות');
