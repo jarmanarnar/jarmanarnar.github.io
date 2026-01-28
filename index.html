@@ -52,7 +52,7 @@
 </head>
 <body class="min-h-screen p-8 md:p-16">
 
-    <div class="max-w-2xl">
+    <div class="max-w-2xl relative z-10">
         <div id="typer"></div>
         <span id="cursor" class="cursor"></span>
 
@@ -68,10 +68,23 @@
             </section>
 
             <section class="space-y-4">
-                <p class="command-line italic text-sm">ls links</p>
+                <p class="command-line italic text-sm">ls contact</p>
                 <div class="flex flex-wrap gap-x-8 gap-y-2">
                     <a href="mailto:anialechko@gmail.com">[Email]</a>
                     <a href="https://www.linkedin.com/in/anialechko/" target="_blank">[LinkedIn]</a>
+                </div>
+            </section>
+
+            <section class="space-y-4">
+                <p class="command-line italic text-sm">ls projects</p>
+                <div class="flex flex-wrap gap-x-8 gap-y-2">
+                    <a href="https://sendi.io" target="_blank">[Sendi.io]</a>
+                </div>
+            </section>
+
+            <section class="space-y-4">
+                <p class="command-line italic text-sm">ls vibe_coding</p>
+                <div class="flex flex-wrap gap-x-8 gap-y-2">
                     <a href="https://jarmanarnar.github.io/KOTEL/" target="_blank">[Virtual Wall]</a>
                 </div>
             </section>
@@ -79,7 +92,7 @@
     </div>
 
     <script>
-        const text = "Initializing alex_os... Done.";
+        const text = "Initializing temporary_portfolio... Done.";
         const typer = document.getElementById('typer');
         const content = document.getElementById('content');
         const cursor = document.getElementById('cursor');
