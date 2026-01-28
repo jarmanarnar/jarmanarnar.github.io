@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ALEX RIVKIN</title>
     <style>
         :root {
@@ -15,11 +15,11 @@
             --flame: #ffcc00;
         }
 
-        /* הגדרת רקע כללי לדף */
+        /* גלילה טבעית וחלקה לכל העמוד */
         html {
+            min-height: 100%;
             background-color: var(--bg);
-            height: 100%;
-            transition: direction 0.3s;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -27,21 +27,20 @@
             color: var(--fg);
             font-family: 'Consolas', 'Courier New', monospace;
             margin: 0 auto;
-            padding: 0 20px 20px 20px;
+            padding: 10px 20px 40px 20px; /* ריווח נוח */
             font-size: 16px;
-            line-height: 1.5;
-            height: 100vh;
+            line-height: 1.6;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            max-width: 900px; 
+            max-width: 900px;
             width: 100%;
+            min-height: 100vh;
             border-right: 1px solid rgba(51, 255, 51, 0.05);
             border-left: 1px solid rgba(51, 255, 51, 0.05);
         }
 
-        /* --- סרגל עליון (שפה והגדרות) --- */
+        /* --- סרגל עליון (Top Bar) - שפות והגדרות --- */
         .top-status-bar {
             display: flex;
             justify-content: space-between;
@@ -54,295 +53,186 @@
             flex-shrink: 0;
         }
 
-        .status-text {
-            font-size: 0.9em;
-            letter-spacing: 1px;
-        }
-
         .lang-selector { display: flex; gap: 5px; }
-        .lang-opt { cursor: pointer; transition: color 0.2s; }
-        .lang-opt:hover { color: var(--fg); }
-        .lang-opt.active { color: var(--highlight); font-weight: bold; text-decoration: underline; }
+        .lang-opt { cursor: pointer; transition: color 0.2s; opacity: 0.7; }
+        .lang-opt:hover { opacity: 1; color: var(--fg); }
+        .lang-opt.active { color: var(--highlight); font-weight: bold; text-decoration: underline; opacity: 1; }
 
-        /* כפתורי חגים */
-        .holiday-btn {
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: all 0.3s;
-            filter: grayscale(100%);
-            margin: 0 5px;
-        }
-        .holiday-btn:hover, .holiday-btn.active {
-            filter: grayscale(0%);
-            text-shadow: 0 0 10px #fff;
-            transform: scale(1.1);
-        }
+        .holiday-icons { display: flex; gap: 10px; margin: 0 10px; }
+        .holiday-btn { font-size: 1.2em; cursor: pointer; filter: grayscale(100%); transition: 0.3s; }
+        .holiday-btn:hover, .holiday-btn.active { filter: grayscale(0%); transform: scale(1.1); }
 
-        header { margin-bottom: 10px; flex-shrink: 0; }
-        h1 { margin: 0; font-size: 1.8em; letter-spacing: 2px; color: var(--highlight); cursor: pointer; text-transform: uppercase;}
-        .subtitle { color: var(--dim); font-size: 0.9em; margin-bottom: 15px; }
+        /* --- כותרת ראשית --- */
+        header { margin-bottom: 15px; text-align: center; }
+        h1 { margin: 0; font-size: 1.8em; letter-spacing: 2px; color: var(--highlight); cursor: pointer; text-transform: uppercase; }
+        .subtitle { color: var(--dim); font-size: 0.9em; margin-top: 5px; }
 
+        /* --- תפריט הניווט (העיצוב המקורי) --- */
         .nav { 
-            display: flex; gap: 15px; flex-wrap: wrap; align-items: center; 
-            padding-bottom: 10px; border-bottom: 1px solid var(--dim);
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            flex-wrap: wrap; 
+            align-items: center; 
+            padding-bottom: 10px; 
+            border-bottom: 1px dashed var(--dim);
+            margin-bottom: 10px;
         }
+        
         .nav-item { cursor: pointer; color: var(--fg); font-weight: bold; transition: 0.2s; }
         .nav-item:hover { color: var(--highlight); text-decoration: underline; }
         .nav-item.active { color: var(--highlight); text-decoration: underline; }
-        .nav-sep { color: var(--dim); }
-        
-        /* --- סרגל כלים --- */
+        .nav-sep { color: var(--dim); opacity: 0.5; }
+
+        /* --- סרגל כלים (ניקוי) --- */
         .tools-bar {
-            display: flex; align-items: center; justify-content: flex-end;
-            gap: 10px; padding: 5px 10px;
-            background: rgba(51, 255, 51, 0.05);
-            margin-top: 10px;
-            border: 1px solid rgba(51, 255, 51, 0.1);
-            border-bottom: none;
-            font-size: 0.85em;
-            flex-shrink: 0;
+            display: flex; justify-content: flex-end;
+            margin-bottom: 10px;
         }
-        html[dir="ltr"] .tools-bar { justify-content: flex-end; }
+        .clear-link { cursor: pointer; color: var(--dim); font-size: 0.85em; transition: 0.2s; }
+        .clear-link:hover { color: var(--highlight); text-decoration: underline; }
 
-        .tool-btn {
-            cursor: pointer; color: var(--dim); transition: all 0.2s;
-            display: flex; align-items: center; gap: 5px; padding: 2px 5px;
-        }
-        .tool-btn:hover { color: var(--highlight); background: rgba(255, 255, 255, 0.1); }
-        .tool-icon { font-size: 1.1em; }
-
-        /* אזור פלט / טרמינל */
+        /* --- אזור התוכן (טרמינל) --- */
         #terminal {
             flex: 1;
-            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            scroll-behavior: smooth;
-            padding: 10px;
-            border: 1px solid rgba(51, 255, 51, 0.1);
-            background: rgba(0,0,0,0.3);
-            cursor: text;
+            gap: 20px;
+            padding-bottom: 20px;
         }
 
-        #output {
-            white-space: normal; 
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding-bottom: 40px; 
+        /* שורות לוג */
+        .log-entry.command {
+            color: var(--dim); font-size: 0.9em; border-top: 1px solid rgba(51,255,51,0.1); padding-top: 10px; margin-top: 10px;
         }
-
-        /* --- עיצוב שורת הקלט הדינמית בתוך הטרמינל --- */
-        .terminal-input-line {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-            width: 100%;
-            flex-shrink: 0;
+        .log-entry.response { white-space: pre-wrap; line-height: 1.6; animation: fadeIn 0.3s ease-out; }
+        
+        /* כרטיסיות */
+        .grid-container {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 15px; margin-top: 15px;
         }
-
-        .term-prompt-sign {
-            color: var(--fg);
-            font-weight: bold;
-            white-space: nowrap;
-            margin-left: 8px;
+        .card {
+            border: 1px solid var(--dim); 
+            border-right: 3px solid var(--fg); /* RTL */
+            background: rgba(255,255,255,0.03); 
+            padding: 15px; 
+            cursor: pointer; 
+            transition: transform 0.2s;
         }
-        html[dir="ltr"] .term-prompt-sign { margin-left: 0; margin-right: 8px; }
+        html[dir="ltr"] .card { border-right: 1px solid var(--dim); border-left: 3px solid var(--fg); }
+        .card:hover { border-color: var(--fg); background: rgba(51,255,51,0.05); transform: translateY(-2px); }
+        .card-title { color: var(--highlight); font-weight: bold; margin-bottom: 5px; font-size: 1.1em; }
+        .card-desc { color: var(--dim); font-size: 0.9em; }
+        .card-footer { margin-top: 10px; font-size: 0.8em; color: var(--fg); opacity: 0.8; }
 
-        .term-input {
-            background: transparent;
-            border: none;
-            color: var(--highlight);
-            font-family: inherit;
-            font-size: 16px;
-            flex: 1;
-            outline: none;
-            padding: 0;
-            margin: 0;
-            min-width: 50px;
-        }
+        /* כפתורים וקישורים בתוכן */
+        .download-btn { display: inline-block; padding: 8px 15px; border: 1px solid var(--fg); color: var(--fg); font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .download-btn:hover { background: var(--fg); color: black; }
+        .back-link { cursor: pointer; color: var(--dim); text-decoration: underline; display: block; margin-top: 20px; font-size: 0.9em; }
+        .back-link:hover { color: var(--highlight); }
 
-        /* --- שלג --- */
+        /* טבלאות למאמרים */
+        .article-content h2 { color: var(--highlight); margin-top: 0; padding-bottom: 10px; border-bottom: 1px dashed var(--dim); }
+        .article-content h3 { color: var(--fg); margin-top: 25px; }
+        .article-content p { margin-bottom: 15px; color: #ddd; }
+        .article-content strong { color: var(--highlight); }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.9em; border: 1px solid var(--dim); }
+        th, td { border: 1px solid var(--dim); padding: 10px; text-align: start; vertical-align: top; }
+        th { background: rgba(51, 255, 51, 0.1); color: var(--highlight); }
+        td { background: rgba(255, 255, 255, 0.02); }
+
+        /* --- אנימציות --- */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ווידג'טים --- */
         .snowflake { position: fixed; top: -10px; color: #fff; pointer-events: none; z-index: 9999; animation: fall linear infinite; }
         @keyframes fall { to { transform: translateY(100vh); } }
 
-        /* --- חנוכייה קטנה --- */
+        /* חנוכייה קטנה */
         .menorah-container {
-            position: fixed;
-            bottom: 20px;
-            /* ברירת מחדל (RTL - עברית): צד שמאל */
-            left: 20px;
-            right: auto;
-            display: flex;
-            align-items: flex-end;
-            gap: 3px; /* רווח צפוף יותר */
-            z-index: 9998;
-            pointer-events: none; 
-            background: rgba(0,0,0,0.8);
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(51, 255, 51, 0.2);
-            transition: opacity 0.3s, transform 0.3s;
-            opacity: 0;
-            transform: translateY(20px);
+            position: fixed; bottom: 20px; right: 20px; 
+            display: flex; align-items: flex-end; gap: 4px;
+            background: rgba(0,0,0,0.85); padding: 8px 12px; border-radius: 8px;
+            border: 1px solid rgba(51, 255, 51, 0.3);
+            transition: 0.3s; opacity: 0; pointer-events: none; transform: translateY(20px);
+            z-index: 1000;
         }
+        html[dir="ltr"] .menorah-container { right: auto; left: 20px; }
+        .menorah-container.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
-        /* באנגלית/LTR: צד ימין */
-        html[dir="ltr"] .menorah-container {
-            right: 20px;
-            left: auto;
+        .candle { width: 6px; height: 25px; background: var(--dim); position: relative; cursor: pointer; border: 1px solid #222; }
+        .candle:hover { background: #999; }
+        .candle.shamash { height: 35px; margin: 0 4px; background: #666; }
+        .flame { 
+            position: absolute; top: -10px; left: -1px; width: 8px; height: 12px; 
+            background: var(--flame); border-radius: 50% 50% 20% 20%; 
+            display: none; box-shadow: 0 0 5px var(--flame); animation: flicker 0.1s infinite alternate; 
         }
+        .candle.lit .flame { display: block; }
+        @keyframes flicker { 0%{transform:scale(1);} 100%{transform:scale(1.1); opacity: 0.8;} }
 
-        .menorah-container.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .candle {
-            width: 6px; /* נר דק */
-            height: 25px; /* נר נמוך */
-            background: var(--dim);
-            border: 1px solid var(--bg);
-            position: relative;
-            cursor: pointer;
-            transition: height 0.3s, background-color 0.3s;
-        }
-
-        .candle:hover { background-color: var(--fg); }
-        
-        /* שמש */
-        .candle.shamash { 
-            height: 35px; 
-            margin: 0 4px;
-            background: #555;
-        }
-
-        .flame {
-            width: 8px;
-            height: 12px;
-            background: var(--flame);
-            border-radius: 50% 50% 20% 20%;
-            position: absolute;
-            top: -12px;
-            left: -1px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 0 5px var(--flame);
-            animation: flicker 0.1s infinite alternate;
-            transform-origin: center bottom;
-        }
-
-        .candle.lit .flame { opacity: 1; }
-
-        @keyframes flicker {
-            0% { transform: scale(1) rotate(-2deg); }
-            100% { transform: scale(1.1) rotate(2deg); opacity: 0.8; }
-        }
-
-        .text-content { white-space: pre-wrap; line-height: 1.6; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
-
-        .card {
-            border: 1px solid var(--dim); border-right: 3px solid var(--fg);
-            background: rgba(255, 255, 255, 0.03); padding: 15px; cursor: pointer; transition: all 0.2s ease;
-            display: flex; flex-direction: column; height: 100%; box-sizing: border-box;
-        }
-        html[dir="ltr"] .card { border-right: 1px solid var(--dim); border-left: 3px solid var(--fg); }
-        .card:hover { border-color: var(--fg); background: rgba(51, 255, 51, 0.05); transform: translateY(-2px); }
-        .card-title { color: var(--highlight); font-weight: bold; margin-bottom: 5px; font-size: 1.1em;}
-        .card-desc { color: var(--dim); font-size: 0.9em; flex-grow: 1; }
-        .card-footer { margin-top: 10px; font-size: 0.8em; color: var(--fg); opacity: 0.7;}
-
-        .back-link { display: inline-block; margin-top: 20px; padding: 5px 10px; border: 1px dashed var(--dim); color: var(--dim); cursor: pointer; }
-        .back-link:hover { color: var(--highlight); border-color: var(--highlight); }
-        
-        .download-btn { display: inline-block; margin-top: 20px; padding: 8px 15px; border: 1px solid var(--fg); color: var(--fg); cursor: pointer; text-align: center; font-weight: bold; }
-        .download-btn:hover { background: var(--fg); color: #000; }
-
-        .chat-separator { border-top: 1px dashed var(--dim); margin: 20px 0; position: relative; }
-        .chat-separator::after { content: 'AI TERMINAL ACTIVE'; position: absolute; top: -10px; right: 10px; background: var(--bg); padding: 0 5px; font-size: 0.8em; color: var(--dim); }
-        html[dir="ltr"] .chat-separator::after { right: auto; left: 10px; }
-
-        .chat-msg { margin-bottom: 10px; line-height: 1.5; word-wrap: break-word;}
-        .chat-msg.user { color: var(--highlight); }
-        .chat-msg.ai { color: var(--ai-color); }
-        
+        /* הדפסה */
         @media print {
-            body { background: white; color: black; max-width: 100%; border: none; overflow: visible; height: auto; display: block; }
-            .top-status-bar, .tools-bar, header, .nav, .terminal-input-line, .back-link, .menorah-container { display: none !important; }
-            #terminal { border: none; overflow: visible; background: transparent; }
+            .top-status-bar, .nav, .menorah-container, .back-link, .tools-bar { display: none !important; }
+            body { padding: 0; color: black; background: white; }
             .card { border: 1px solid #ccc; color: black; background: white; page-break-inside: avoid; }
-            .chat-msg { border-bottom: 1px solid #eee; padding-bottom: 5px; color: black !important; }
             a { text-decoration: none; color: black; }
         }
+
     </style>
 </head>
 <body>
 
-    <!-- סרגל עליון: הגדרות גלובליות -->
     <div class="top-status-bar">
-        <div class="status-text">SYSTEM: ONLINE</div>
-        
+        <div>SYSTEM: ONLINE</div>
         <div style="display:flex; align-items:center;">
-            <!-- בחירת שפה -->
             <div class="lang-selector">
-                <span class="lang-opt active" id="lang-he" onclick="setLang('he')">HE</span>
-                <span>/</span>
-                <span class="lang-opt" id="lang-en" onclick="setLang('en')">EN</span>
-                <span>/</span>
+                <span class="lang-opt active" id="lang-he" onclick="setLang('he')">HE</span>/
+                <span class="lang-opt" id="lang-en" onclick="setLang('en')">EN</span>/
                 <span class="lang-opt" id="lang-ru" onclick="setLang('ru')">RU</span>
             </div>
             
-            <div style="margin: 0 10px; color:var(--dim)">|</div>
-
-            <!-- כפתור העץ -->
-            <span class="holiday-btn tree-btn" onclick="toggleSnow()" title="Toggle Snow">🎄</span>
-            <!-- כפתור חנוכייה -->
-            <span class="holiday-btn menorah-btn" onclick="toggleMenorah()" title="Toggle Menorah">🕎</span>
+            <div style="width:1px; height:15px; background:var(--dim); margin:0 15px; opacity:0.3"></div>
+            
+            <div class="holiday-icons">
+                <span class="holiday-btn tree-btn" onclick="toggleSnow()" title="Christmas Tree">🎄</span>
+                <span class="holiday-btn menorah-btn" onclick="toggleMenorah()" title="Menorah">🕎</span>
+            </div>
         </div>
     </div>
 
     <header>
-        <h1 id="header-title" onclick="run('about')">אלכס ריבקין</h1>
-        <div id="header-subtitle" class="subtitle">מעצב מוצר ופילוסוף</div>
+        <h1 id="header-title" onclick="navigateTo('about')">אלכס ריבקין</h1>
+        <div id="header-subtitle" class="subtitle">מעצב UX/UI וסטודנט לתואר שני</div>
         
         <nav class="nav">
-            <span class="nav-item" id="nav-about" onclick="run('about')">אודות</span>
+            <span class="nav-item active" id="nav-about" onclick="navigateTo('about')">אודות</span>
             <span class="nav-sep">|</span>
-            <span class="nav-item" id="nav-projects" onclick="run('projects')">פרויקטים</span>
+            <span class="nav-item" id="nav-projects" onclick="navigateTo('projects')">פרויקטים</span>
             <span class="nav-sep">|</span>
-            <span class="nav-item" id="nav-articles" onclick="run('articles')">מאמרים</span>
+            <span class="nav-item" id="nav-articles" onclick="navigateTo('articles')">מאמרים</span>
             <span class="nav-sep">|</span>
-            <span class="nav-item" id="nav-cv" onclick="run('cv')">CV</span>
+            <span class="nav-item" id="nav-cv" onclick="navigateTo('cv')">CV</span>
         </nav>
     </header>
 
-    <!-- סרגל כלים לתוכן -->
     <div class="tools-bar">
-        <div class="tool-btn" onclick="clearChat()" title="נקה מסך / Clear Screen">
-            <span class="tool-text" id="clear-btn-text">[ניקוי]</span>
-        </div>
+        <span class="clear-link" id="clear-text" onclick="navigateTo('about')">[ניקוי]</span>
     </div>
 
-    <!-- הטרמינל המרכזי -->
-    <div id="terminal" onclick="focusInput()">
-        <div id="output"></div>
-        <!-- שורת הקלט תיווצר כאן דינמית -->
-    </div>
+    <!-- אזור התוכן המרכזי -->
+    <div id="content-display"></div>
 
-    <!-- קונטיינר לחנוכייה -->
+    <!-- חנוכייה -->
     <div id="menorah-display" class="menorah-container">
-        <!-- נרות ימין -->
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
-        
-        <!-- שמש -->
         <div class="candle shamash" onclick="toggleCandle(this)"><div class="flame"></div></div>
-        
-        <!-- נרות שמאל -->
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
         <div class="candle" onclick="toggleCandle(this)"><div class="flame"></div></div>
@@ -350,397 +240,155 @@
     </div>
 
     <script>
-        // API Key for Gemini (Environment Variable)
-        const apiKey = ""; 
-
-        const output = document.getElementById('output');
-        const terminalDiv = document.getElementById('terminal');
-        
-        let currentLang = 'he'; 
-        let currentKey = 'about';
-        let activeInput = null; // ישמור רפרנס לאינפוט הפעיל
-
-        // היסטוריית צ'אט נשמרת בזיכרון
-        let chatHistory = {
-            he: [],
-            en: [],
-            ru: []
-        };
+        const output = document.getElementById('content-display');
+        let currentLang = 'he';
 
         const resources = {
             he: {
                 title: 'אלכס ריבקין',
-                subtitle: 'מעצב מוצר ופילוסוף',
-                clear: '[ניקוי]',
+                subtitle: 'מעצב UX/UI וסטודנט לתואר שני',
                 nav: { about: 'אודות', projects: 'פרויקטים', articles: 'מאמרים', cv: 'CV' },
-                prompt_sign: 'Alex_AI:~',
-                prompt_context: {
-                    about: 'פקודה / שאלה...',
-                    projects: 'שאל על הפרויקטים...',
-                    articles: 'שאל על המאמרים...',
-                    cv: 'שאל על הניסיון...'
-                },
-                welcome: "ברוכים הבאים למרחב הדיגיטלי של אלכס ריבקין.\n\nאני מעצב מוצר (Product Designer) עם רקע אקדמי בתקשורת דיגיטלית ופילוסופיה, שילוב שמאפשר לי לחקור לא רק *איך* דברים עובדים, אלא *למה* הם קיימים ומה המשמעות שלהם עבור המשתמש.\n\nעם ניסיון עשיר באפיון ממשקים למערכות מורכבות (B2B, Enterprise) לצד יצירת חוויות משתמש אינטואיטיביות במוצרי B2C, אני מאמין שעיצוב טוב הוא שפה בפני עצמה – שקטה, חכמה ומדויקת.\n\nכאן תוכלו למצוא מידע על:\n1. פרויקטים נבחרים (CRM, Crypto, Gaming).\n2. מאמרים ומחשבות על האתיקה של הטכנולוגיה.\n3. הניסיון המקצועי שלי.\n\nאני כאן כבוט אינטראקטיבי (AI) כדי לענות על כל שאלה, או סתם לשוחח על עיצוב.\n\nמה תרצו לדעת?",
-                projects: `<div class="grid-container fade-in"><div class="card" onclick="run('project_alpha')"><div class="card-title">1. פרויקט אלפא</div><div class="card-desc">עיצוב מחדש למערכת CRM ארגונית מורכבת.</div><div class="card-footer">> לחץ לפרטים</div></div><div class="card" onclick="run('project_beta')"><div class="card-title">2. פרויקט בטא</div><div class="card-desc">דשבורד מסחר בקריפטו עם דגש על ויזואליזציה.</div><div class="card-footer">> לחץ לפרטים</div></div><div class="card" onclick="run('project_gamma')"><div class="card-title">3. פרויקט גאמא</div><div class="card-desc">אפליקציית מובייל קהילתית למשחקי תפקידים (D&D).</div><div class="card-footer">> לחץ לפרטים</div></div></div>`,
-                articles: `<div class="grid-container fade-in"><div class="card"><div class="card-title">האתיקה של הממשק</div><div class="card-desc">על אחריות מוסרית ודפוסים אפלים בעיצוב.</div></div><div class="card"><div class="card-title">בין היידגר ל-AI</div><div class="card-desc">האם הטכנולוגיה חושפת או מסתירה את ההוויה?</div></div></div>`,
-                cv: `<div class="text-content fade-in">--- קורות חיים (CV) ---<br><br>[ ניסיון תעסוקתי ]<br>2023 - היום | Senior Product Designer @ TechCompany<br>- הובלת תהליכי אפיון ועיצוב מקצה לקצה.<br>- בניית Design System חוצה ארגון.<br><br>2020 - 2023 | UX/UI Designer @ Startup<br>- עיצוב ממשקים למערכות B2B מורכבות.<br>- מחקר משתמשים וניתוח נתונים.<br><br>[ השכלה ]<br>2018 - 2020 | MA Philosophy @ Bar-Ilan University<br>2015 - 2018 | BA Digital Communication @ Sapir College<br><br>[ כלים ושפות ]<br>Figma, Protopie, HTML/CSS, Jira.<br>עברית (שפת אם), אנגלית (שליטה מלאה).<br><br><div class="download-btn">[ הורד PDF ]</div></div>`,
-                project_alpha: `<div class="text-content fade-in">--- פרויקט אלפא (CRM) ---<br><br>תיאור:<br>תהליך אפיון מחדש (Redesign) למערכת ניהול לקוחות ארגונית שהייתה מסורבלת ומיושנת.<br><br>האתגר:<br>פישוט תהליכים מורכבים מבלי לאבד פונקציונליות קריטית למשתמשי ה-Power Users.<br><br>כלים וטכנולוגיות:<br>Figma, Axure, Jira.<br><br><div class="back-link" onclick="run('projects')">< חזור לרשימת הפרויקטים</div></div>`,
-                project_beta: `<div class="text-content fade-in">--- פרויקט בטא (Crypto) ---<br><br>תיאור:<br>ממשק מסחר בקריפטו במצב כהה (Dark Mode).<br><br>האתגר:<br>הצגת נתונים רבים בזמן אמת בצורה שאינה מעמיסה קוגניטיבית על הסוחר.<br><br>דגשים:<br>צבעוניות מותאמת למסכים, טיפוגרפיה ברורה למספרים.<br><br><div class="back-link" onclick="run('projects')">< חזור לרשימת הפרויקטים</div></div>`,
-                project_gamma: `<div class="text-content fade-in">--- פרויקט גאמא (D&D) ---<br><br>תיאור:<br>אפליקציית עזר למשחקי מבוכים ודרקונים.<br><br>גישה עיצובית:<br>Mobile First. שימוש באלמנטים של משחוק (Gamification) כדי להגביר מעורבות.<br><br><div class="back-link" onclick="run('projects')">< חזור לרשימת הפרויקטים</div></div>`
+                about: `<div class="text-content fade-in">
+                    ברוכים הבאים למרחב הדיגיטלי של אלכס ריבקין.<br><br>
+                    אני מעצב UX/UI וסטודנט לתואר שני בפילוסופיה (מסלול תזה), המשלב יכולות ביצוע חזקות עם חשיבה אנליטית וביקורתית. אני מחויב ליצירת פתרונות עיצוב ממוקדי-משתמש תוך שימוש ברקע אקדמי רב-תחומי להעמקת תובנות המוצר ומתודולוגיות המחקר.<br><br>
+                    כאן תוכלו למצוא מידע על:<br>
+                    1. פרויקטים נבחרים (SENDI.IO ונוספים).<br>
+                    2. מאמרים ומחשבות על האתיקה של הטכנולוגיה.<br>
+                    3. הניסיון המקצועי שלי.
+                </div>`,
+                projects: `<div class="grid-container fade-in">
+                    <div class="card" onclick="navigateTo('project_sendi')"><div class="card-title">1. SENDI.IO</div><div class="card-desc">פלטפורמת ניהול משלוחים.</div><div class="card-footer">> לחץ לפרטים</div></div>
+                    <div class="card" onclick="navigateTo('project_beta')"><div class="card-title">2. פרויקט בטא (Crypto)</div><div class="card-desc">דשבורד מסחר בקריפטו עם דגש על ויזואליזציה.</div><div class="card-footer">> לחץ לפרטים</div></div>
+                    <div class="card" onclick="navigateTo('project_gamma')"><div class="card-title">3. פרויקט גאמא (D&D)</div><div class="card-desc">אפליקציית מובייל קהילתית למשחקי תפקידים (D&D).</div><div class="card-footer">> לחץ לפרטים</div></div>
+                </div>`,
+                articles: `<div class="grid-container fade-in">
+                    <div class="card" onclick="navigateTo('article_heidegger')"><div class="card-title">השאלה על הבינה המלאכותית</div><div class="card-desc">מסגור, ישות וטכנולוגיה בעידן האלגוריתמי.</div><div class="card-footer">> לקריאת המאמר המלא</div></div>
+                    <div class="card"><div class="card-title">האתיקה של הממשק</div><div class="card-desc">על אחריות מוסרית ודפוסים אפלים בעיצוב.</div></div>
+                </div>`,
+                cv: `<div class="text-content fade-in">
+                    --- קורות חיים (CV) ---<br><br>
+                    <strong>תמצית מקצועית</strong><br>
+                    מעצב UX/UI וסטודנט לתואר שני בפילוסופיה (מסלול תזה). משלב יכולות ביצוע חזקות עם חשיבה אנליטית וביקורתית. מסור ליצירת פתרונות עיצוב ממוקדי-משתמש.<br><br>
+                    <strong>ניסיון תעסוקתי</strong><br>
+                    2025 | מעצב UX/UI ב-Any-App (Startplan) | רמת גן<br>
+                    - מעצב יחיד (Sole Designer) האחראי על עיצוב מוצר מקצה לקצה לסטארטאפים בשלבים מוקדמים.<br>
+                    - עבודה על תהליך העיצוב המלא ממחקר ועד הטמעה, תוך עמידה בלוחות זמנים מהירים.<br><br>
+                    <strong>השכלה</strong><br>
+                    2028 (צפוי) | M.A. בפילוסופיה (מסלול תזה) @ אוניברסיטת בר-אילן<br>
+                    B.A. בתקשורת @ המכללה האקדמית ספיר<br><br>
+                    <strong>הסמכות</strong><br>
+                    הסמכת מחקר UX @ הטכניון<br><br>
+                    <strong>כלים</strong><br>
+                    Figma, Adobe Suite, GenAI, Basic HTML & CSS.<br><br>
+                    <div class="download-btn">[ הורד PDF ]</div>
+                </div>`,
+                project_sendi: `<div class="text-content fade-in">--- פרויקט SENDI.IO ---<br><br>פלטפורמת ניהול משלוחים.<br><br>תיאור:<br>עיצוב ממשקי Web ומובייל לפלטפורמת משלוחים. יצירת אבות-טיפוס (Prototypes) ונכסים ויזואליים לתקשורת עם המפתחים.<br><br>הישגים:<br>צבירת ניסיון מעשי בתרגום דרישות מוצר למסכי UI.<br><br><div class="back-link" onclick="navigateTo('projects')">< חזור לרשימת הפרויקטים</div></div>`,
+                project_beta: `<div class="text-content fade-in">--- פרויקט בטא (Crypto) ---<br><br>תיאור:<br>ממשק מסחר בקריפטו במצב כהה (Dark Mode).<br><br>האתגר:<br>הצגת נתונים רבים בזמן אמת בצורה שאינה מעמיסה קוגניטיבית על הסוחר.<br><br>דגשים:<br>צבעוניות מותאמת למסכים, טיפוגרפיה ברורה למספרים.<br><br><div class="back-link" onclick="navigateTo('projects')">< חזור לרשימת הפרויקטים</div></div>`,
+                project_gamma: `<div class="text-content fade-in">--- פרויקט גאמא (D&D) ---<br><br>תיאור:<br>אפליקציית עזר למשחקי מבוכים ודרקונים.<br><br>גישה עיצובית:<br>Mobile First. שימוש באלמנטים של משחוק (Gamification) כדי להגביר מעורבות.<br><br><div class="back-link" onclick="navigateTo('projects')">< חזור לרשימת הפרויקטים</div></div>`,
+                article_heidegger: `<div class="article-content fade-in">
+                    <h2>השאלה על הבינה המלאכותית: מסגור, ישות וטכנולוגיה בעידן האלגוריתמי</h2>
+                    <p><strong>הקדמה: הקץ של המטפיזיקה והופעת המכונה החושבת</strong></p>
+                    <p>בעידן שבו מערכות בינה מלאכותית (AI) מחוללות טקסטים, מנהלות שיחות ומפענחות מבנים מורכבים של חלבונים, השאלה הפילוסופית על מהות הטכנולוגיה הופכת דחופה מאי פעם. אין זה עוד דיון תיאורטי על כלים ומכשירים, אלא התמודדות ישירה עם אופן שבו המציאות עצמה מתגלה בפנינו. מרטין היידיגר, מגדולי הפילוסופים של המאה ה-20, חזה מהלך זה בדיוק כשהכריז כי "הקיברנטיקה היא המטפיזיקה של העידן האטומי". עבור היידיגר, הטכנולוגיה אינה אוסף של מכונות, אלא אופן של חשיפת האמת, דרך שבה העולם מופיע בפני האדם.</p>
+                    <p>דוח מחקר זה מבקש לבצע ניתוח מעמיק של המפגש בין הפילוסופיה ההיידיגריאנית לבין הבינה המלאכותית המודרנית, תוך בחינת המושגים המרכזיים של הגותו – ה"מסגור" (Gestell), ה"מאגר הזמין" (Bestand), והיות-השם (Dasein) – והחלתם על הארכיטקטורות של רשתות נוירונים, מודלי שפה גדולים (LLMs) והאתיקה של האלגוריתמים.</p>
+                    <h3>חלק א': היסודות האונטולוגיים – Dasein מול המכונה</h3>
+                    <p>כדי להבין את הביקורת ההיידיגריאנית על הבינה המלאכותית, יש לחזור אל שאלת היסוד של "הוויה וזמן" (1927): שאלת משמעות ההוויה. היידיגר מבחין בין ישים שונים, אך היש המרכזי לחקירה הוא ה-Dasein ("היות-שם"), המונח שלו לקיום האנושי.</p>
+                    <table>
+                        <thead><tr><th>קטגוריה</th><th>"ידע-ש"</th><th>"ידע-איך"</th></tr></thead>
+                        <tbody><tr><td>בסיס פילוסופי</td><td>דקארט / אפלטון</td><td>היידיגר / מרלו-פונטי</td></tr><tr><td>אופי הפעולה</td><td>לוגיקה פורמלית</td><td>התמודדות אינטואיטיבית</td></tr></tbody></table>
+                    <h3>סיכום ומסקנות</h3>
+                    <p>הבינה המלאכותית היא שיא של מהלך מטאפיזי, המבקש להפוך את העולם לנתון לחישוב. ה-AI מציב בפנינו את הסכנה העליונה: הפיכת האדם עצמו ל"מאגר זמין" של דאטה. אך המפגש עם האינטליגנציה ה"זרה" מאלץ אותנו להגדיר מחדש מהו המיוחד באנושי.</p>
+                    <br><div class="back-link" onclick="navigateTo('articles')">< חזור לרשימת המאמרים</div>
+                </div>`
             },
             en: {
                 title: 'ALEX RIVKIN',
-                subtitle: 'Product Designer & Philosopher',
-                clear: '[CLEAR]',
+                subtitle: 'UX/UI Designer | M.A. Student',
                 nav: { about: 'About', projects: 'Projects', articles: 'Articles', cv: 'CV' },
-                prompt_sign: 'Alex_AI:~',
-                prompt_context: { about: 'Command / Question...', projects: 'Ask about projects...', articles: 'Ask about articles...', cv: 'Ask about experience...' },
-                welcome: "Welcome to Alex Rivkin's digital space.\n\nI am a Product Designer with an academic background in Digital Communication and Philosophy, a combination that allows me to explore not just *how* things work, but *why* they exist and what they mean to the user.\n\nWith rich experience in designing interfaces for complex systems (B2B, Enterprise) alongside creating intuitive user experiences in B2C products, I believe that good design is a language in itself – quiet, smart, and precise.\n\nHere you can find information on:\n1. Selected Projects (CRM, Crypto, Gaming).\n2. Articles and thoughts on the Ethics of Technology.\n3. My Professional Experience.\n\nI am here as an interactive AI bot to answer any questions, or just to chat about design.\n\nWhat would you like to know?",
-                projects: `<div class="grid-container fade-in"><div class="card" onclick="run('project_alpha')"><div class="card-title">1. Project Alpha</div><div class="card-desc">Redesign for a complex enterprise CRM system.</div><div class="card-footer">> Click for details</div></div><div class="card" onclick="run('project_beta')"><div class="card-title">2. Project Beta</div><div class="card-desc">Crypto trading dashboard focused on visualization.</div><div class="card-footer">> Click for details</div></div><div class="card" onclick="run('project_gamma')"><div class="card-title">3. Project Gamma</div><div class="card-desc">Community mobile app for RPG games (D&D).</div><div class="card-footer">> Click for details</div></div></div>`,
-                articles: `<div class="grid-container fade-in"><div class="card"><div class="card-title">Interface Ethics</div><div class="card-desc">On moral responsibility and dark patterns in design.</div></div><div class="card"><div class="card-title">Heidegger & AI</div><div class="card-desc">Does technology reveal or conceal being?</div></div></div>`,
-                cv: `<div class="text-content fade-in">--- Curriculum Vitae ---<br><br>[ Work Experience ]<br>2023 - Present | Senior Product Designer @ TechCompany<br>- Leading E2E design processes.<br>- Building cross-organizational Design Systems.<br><br>2020 - 2023 | UX/UI Designer @ Startup<br>- Designing complex B2B interfaces.<br>- User research and data analysis.<br><br>[ Education ]<br>2018 - 2020 | MA Philosophy @ Bar-Ilan University<br>2015 - 2018 | BA Digital Communication @ Sapir College<br><br>[ Tools & Languages ]<br>Figma, Protopie, HTML/CSS, Jira.<br>Hebrew (Native), English (Fluent).<br><br><div class="download-btn">[ Download PDF ]</div></div>`,
-                project_alpha: `<div class="text-content fade-in">--- Project Alpha (CRM) ---<br><br>Description:<br>Redesign process for a cumbersome and outdated enterprise customer management system.<br><br>The Challenge:<br>Simplifying complex workflows without losing critical functionality for Power Users.<br><br>Tools:<br>Figma, Axure, Jira.<br><br><div class="back-link" onclick="run('projects')">< Back to Projects</div></div>`,
-                project_beta: `<div class="text-content fade-in">--- Project Beta (Crypto) ---<br><br>Description:<br>Dark Mode crypto trading interface.<br><br>The Challenge:<br>Displaying real-time data without cognitive overload.<br><br>Highlights:<br>Screen-optimized color palette, clear typography for numbers.<br><br><div class="back-link" onclick="run('projects')">< Back to Projects</div></div>`,
-                project_gamma: `<div class="text-content fade-in">--- Project Gamma (D&D) ---<br><br>Description:<br>Companion app for Dungeons & Dragons.<br><br>Design Approach:<br>Mobile First. Using Gamification elements to increase engagement.<br><br><div class="back-link" onclick="run('projects')">< Back to Projects</div></div>`
+                about: `<div class="text-content fade-in">Welcome to Alex Rivkin's digital space.<br><br>I am a UX/UI Designer and M.A. Student in Philosophy (Thesis Track). I combine strong execution skills with analytical and critical thinking abilities. Dedicated to creating user-centric design solutions while leveraging a multidisciplinary academic background to deepen product insights and research methodologies.<br><br>Here you can find information on:\n1. Selected Projects (SENDI.IO and more).\n2. Articles on Tech Ethics.\n3. Professional Experience.</div>`,
+                projects: `<div class="grid-container fade-in"><div class="card" onclick="navigateTo('project_sendi')"><div class="card-title">1. SENDI.IO</div><div class="card-desc">Delivery Management Platform.</div><div class="card-footer">> Details</div></div><div class="card" onclick="navigateTo('project_beta')"><div class="card-title">2. Project Beta</div><div class="card-desc">Crypto trading dashboard focused on visualization.</div><div class="card-footer">> Details</div></div><div class="card" onclick="navigateTo('project_gamma')"><div class="card-title">3. Project Gamma</div><div class="card-desc">Community mobile app for RPG games (D&D).</div><div class="card-footer">> Details</div></div></div>`,
+                articles: `<div class="grid-container fade-in"><div class="card" onclick="navigateTo('article_heidegger')"><div class="card-title">The Question Concerning AI</div><div class="card-desc">Heideggerian analysis.</div></div><div class="card"><div class="card-title">Interface Ethics</div></div></div>`,
+                cv: `<div class="text-content fade-in">--- Curriculum Vitae ---<br><br><strong>Professional Summary</strong><br>UX/UI Designer and M.A. Student in Philosophy. Combines strong execution skills with analytical and critical thinking.<br><br><strong>Work Experience</strong><br>2025 | UX/UI Designer @ Any-App (Startplan)<br>- Sole designer responsible for end-to-end product design for early-stage startups.<br>- Project SENDI.IO: Designed web & mobile interfaces for a delivery platform.<br><br><strong>Education</strong><br>2028 (Exp) | M.A. in Philosophy @ Bar-Ilan University<br>B.A. in Communication @ Sapir Academic College<br><br><strong>Certifications</strong><br>UX Research Certification @ Technion<br><br><strong>Skills</strong><br>Figma, Adobe Suite, GenAI, Basic HTML & CSS.<br><br><div class="download-btn">[ Download PDF ]</div></div>`,
+                project_sendi: `<div class="text-content fade-in">--- SENDI.IO ---<br><br>Delivery Management Platform.<br><br>Description:<br>Designed web and mobile interfaces for a delivery platform. Created prototypes and visual assets to communicate design concepts to developers.<br><br>Achievement:<br>Gained hands-on experience in translating product requirements into UI screens.<br><br><div class="back-link" onclick="navigateTo('projects')">< Back</div></div>`,
+                project_beta: `<div class="text-content fade-in">--- Project Beta ---<br><br>Crypto Dashboard.<br><div class="back-link" onclick="navigateTo('projects')">< Back</div></div>`,
+                project_gamma: `<div class="text-content fade-in">--- Project Gamma ---<br><br>D&D App.<br><div class="back-link" onclick="navigateTo('projects')">< Back</div></div>`,
+                article_heidegger: `<div class="article-content fade-in"><h2>The Question Concerning AI</h2><p>(Full text available in Hebrew)</p><div class="back-link" onclick="navigateTo('articles')">< Back</div></div>`
             },
             ru: {
                 title: 'АЛЕКС РИВКИН',
-                subtitle: 'Продуктовый Дизайнер и Философ',
-                clear: '[ОЧИСТИТЬ]',
+                subtitle: 'UX/UI Дизайнер | Магистрант',
                 nav: { about: 'Обо мне', projects: 'Проекты', articles: 'Статьи', cv: 'CV' },
-                prompt_sign: 'Alex_AI:~',
-                prompt_context: { about: 'Команда / Вопрос...', projects: 'Спросите о проектах...', articles: 'Спросите о статьях...', cv: 'Спросите об опыте...' },
-                welcome: "Добро пожаловать в цифровое пространство Алекса Ривкина.\n\nЯ продуктовый дизайнер (Product Designer) с академическим образованием в области цифровых коммуникаций и философии, что позволяет мне исследовать не только то, *как* вещи работают, но и *почему* они существуют и что они значат для пользователя.\n\nИмея богатый опыт проектирования интерфейсов для сложных систем (B2B, Enterprise) наряду с созданием интуитивного пользовательского опыта в продуктах B2C, я верю, что хороший дизайн — это язык сам по себе: тихий, умный и точный.\n\nЗдесь вы можете найти информацию о:\n1. Избранных проектах (CRM, Crypto, Gaming).\n2. Статьях и мыслях об этике технологий.\n3. Моем профессиональном опыте.\n\nЯ здесь как интерактивный бот (AI), чтобы ответить на любые вопросы или просто поговорить о дизайне.\n\nЧто бы вы хотели узнать?",
-                projects: `<div class="grid-container fade-in"><div class="card" onclick="run('project_alpha')"><div class="card-title">1. Проект Альфа</div><div class="card-desc">Редизайн сложной корпоративной CRM-системы.</div><div class="card-footer">> Подробнее</div></div><div class="card" onclick="run('project_beta')"><div class="card-title">2. Проект Бета</div><div class="card-desc">Торговая панель для криптовалют с упором на визуализацию.</div><div class="card-footer">> Подробнее</div></div><div class="card" onclick="run('project_gamma')"><div class="card-title">3. Проект Гамма</div><div class="card-desc">Мобильное приложение для сообщества RPG игр (D&D).</div><div class="card-footer">> Подробнее</div></div></div>`,
-                articles: `<div class="grid-container fade-in"><div class="card"><div class="card-title">Этика интерфейса</div><div class="card-desc">О моральной ответственности и темных паттернах в дизайне.</div></div><div class="card"><div class="card-title">Хайдеггер и ИИ</div><div class="card-desc">Раскрывают ли технологии бытие или скрывают его?</div></div></div>`,
-                cv: `<div class="text-content fade-in">--- Резюме (CV) ---<br><br>[ Опыт работы ]<br>2023 - Наст. время | Senior Product Designer @ TechCompany<br>- Руководство процессами E2E дизайна.
-- Создание дизайн-систем для всей организации.<br><br>2020 - 2023 | UX/UI Designer @ Startup<br>- Проектирование сложных B2B интерфейсов.<br>- Исследование пользователей и анализ данных.<br><br>[ Образование ]<br>2018 - 2020 | MA Philosophy @ Bar-Ilan University<br>2015 - 2018 | BA Digital Communication @ Sapir College<br><br>[ Инструменты и языки ]<br>Figma, Protopie, HTML/CSS, Jira.<br>Иврит (Родной), Английский (Свободный), Русский (Свободный).<br><br><div class="download-btn">[ Скачать PDF ]</div></div>`,
-                project_alpha: `<div class="text-content fade-in">--- Проект Альфа (CRM) ---<br><br>Описание:<br>Процесс редизайна громоздкой и устаревшей корпоративной системы управления клиентами.<br><br>Вызов:<br>Упрощение сложных рабочих процессов без потери критической функциональности для опытных пользователей.<br><br>Инструменты:<br>Figma, Axure, Jira.<br><br><div class="back-link" onclick="run('projects')">< Назад к проектам</div></div>`,
-                project_beta: `<div class="text-content fade-in">--- Проект Бета (Crypto) ---<br><br>Описание:<br>Торговый интерфейс в темном режиме (Dark Mode).<br><br>Вызов:<br>Отображение большого количества данных в реальном времени без когнитивной перегрузки.<br><br>Особенности:<br>Оптимизированная цветовая палитра, четкая типографика.<br><br><div class="back-link" onclick="run('projects')">< Назад к проектам</div></div>`,
-                project_gamma: `<div class="text-content fade-in">--- Проект Гамма (D&D) ---<br><br>Описание:<br>Приложение-помощник для Dungeons & Dragons.<br><br>Подход к дизайну:<br>Mobile First. Использование элементов геймификации для повышения вовлеченности.<br><br><div class="back-link" onclick="run('projects')">< Назад к проектам</div></div>`
+                about: `<div class="text-content fade-in">Добро пожаловать... Я UX/UI Дизайнер и магистрант философии.</div>`,
+                projects: `<div class="grid-container fade-in"><div class="card" onclick="navigateTo('project_sendi')"><div class="card-title">1. SENDI.IO</div></div>...</div>`,
+                articles: `<div class="grid-container fade-in"><div class="card"><div class="card-title">Этика интерфейса</div></div>...</div>`,
+                cv: `<div class="text-content fade-in">--- Резюме (CV) ---<br><br><strong>Обо мне</strong><br>UX/UI дизайнер и магистрант философии. Сочетаю навыки проектирования с аналитическим мышлением.<br><br><strong>Опыт работы</strong><br>2025 | UX/UI Designer @ Any-App (Startplan)<br>- Единственный дизайнер, отвечающий за полный цикл разработки продуктов для стартапов.<br>- Проект SENDI.IO: Дизайн веб и мобильных интерфейсов.<br><br><strong>Образование</strong><br>2028 (ожидается) | M.A. Философия @ Университет Бар-Илан<br>B.A. Коммуникации @ Академический колледж Сапир<br><br><strong>Сертификаты</strong><br>UX Research Certification @ Технион<br><br><strong>Навыки</strong><br>Figma, Adobe Suite, GenAI, Basic HTML & CSS.<br><br><div class="download-btn">[ Скачать PDF ]</div></div>`,
+                project_sendi: `<div class="text-content fade-in">--- SENDI.IO ---<br>Платформа управления доставкой.<br><div class="back-link" onclick="navigateTo('projects')">< Назад</div></div>`,
+                project_beta: `<div class="text-content fade-in">--- Проект Бета ---<br>Крипто...<br><div class="back-link" onclick="navigateTo('projects')">< Назад</div></div>`,
+                project_gamma: `<div class="text-content fade-in">--- Проект Гамма ---<br>D&D...<br><div class="back-link" onclick="navigateTo('projects')">< Назад</div></div>`
             }
         };
 
-        function run(key) {
-            currentKey = key;
-            
-            // עדכון Active Menu
+        function navigateTo(key) {
+            // עדכון Active State בתפריט
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             let navId = 'nav-' + key;
             if (key.includes('project_')) navId = 'nav-projects';
+            if (key.includes('article_')) navId = 'nav-articles';
             const activeEl = document.getElementById(navId);
             if (activeEl) activeEl.classList.add('active');
 
-            // רינדור
-            if (key === 'about') {
-                renderFullChatHistory(); 
+            const data = resources[currentLang][key];
+            if (data) {
+                output.innerHTML = data;
             } else {
-                // תוכן סטטי
-                const data = resources[currentLang][key];
-                if (data) {
-                    output.innerHTML = data;
-                } else {
-                    output.innerHTML = `<div style="color:#ff5555; margin-top:10px;">Content not found: ${key}</div>`;
-                }
-                
-                // הוספת שורת אינפוט למטה
-                addTerminalInput();
+                output.innerHTML = `<div class="text-content" style="color:#ff5555">Error 404: Content not found.</div>`;
             }
         }
 
-        // --- ניהול שורת קלט בטרמינל ---
-        
-        function addTerminalInput() {
-            // הסרת אינפוט קיים אם יש
-            const existingInput = document.getElementById('active-terminal-row');
-            if (existingInput) existingInput.remove();
-
-            const row = document.createElement('div');
-            row.id = 'active-terminal-row';
-            // בוטל הקלאס fade-in
-            row.className = 'terminal-input-line'; 
+        function setLang(l) {
+            currentLang = l;
+            document.documentElement.dir = l === 'he' ? 'rtl' : 'ltr';
             
-            // טקסט הנחיה (Prompt) - למשל Alex_AI:~
-            const promptSign = document.createElement('span');
-            promptSign.className = 'term-prompt-sign';
-            promptSign.innerText = resources[currentLang].prompt_sign;
+            document.getElementById('header-title').innerText = resources[l].title;
+            document.getElementById('header-subtitle').innerText = resources[l].subtitle;
+            document.getElementById('clear-text').innerText = resources[l].clear || '[ניקוי]';
             
-            // שדה הקלט
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'term-input';
-            input.autocomplete = 'off';
-            input.spellcheck = false;
-            
-            // Placeholder לפי הקשר
-            let placeholderText = resources[currentLang].prompt_context.about;
-            if (resources[currentLang].prompt_context[currentKey]) {
-                placeholderText = resources[currentLang].prompt_context[currentKey];
-            } else if (currentKey.includes('project')) {
-                placeholderText = resources[currentLang].prompt_context['projects'];
-            }
-            input.placeholder = placeholderText;
+            const navs = document.querySelectorAll('.nav-item');
+            navs[0].innerText = resources[l].nav.about;
+            navs[1].innerText = resources[l].nav.projects;
+            navs[2].innerText = resources[l].nav.articles;
+            navs[3].innerText = resources[l].nav.cv;
 
-            row.appendChild(promptSign);
-            row.appendChild(input);
-            
-            // הוספה לסוף הפלט
-            // אם יש מיכל צ'אט (בדפי פרויקטים למשל), נוסיף אחריו. אם לא, פשוט ב-output.
-            const chatContainer = document.getElementById('inline-chat-container');
-            if (chatContainer) {
-                chatContainer.appendChild(row);
-            } else {
-                output.appendChild(row);
-            }
-
-            input.focus();
-            input.addEventListener('keydown', handleTermInput);
-            
-            activeInput = input;
-            scrollToBottom();
-        }
-
-        async function handleTermInput(e) {
-            if (e.key === 'Enter') {
-                const text = activeInput.value.trim();
-                if (!text) return;
-
-                // 1. הפיכת השורה הנוכחית לסטטית (היסטוריה)
-                // במקום להשאיר את האינפוט, נחליף אותו בטקסט רגיל
-                // או פשוט נוסיף את ההודעה להיסטוריה ונרנדר מחדש שורה חדשה.
-                // השיטה הכי "טרמינלית" היא להשאיר את מה שכתבנו כטקסט קבוע.
-                
-                // נמחק את שורת האינפוט הפעילה
-                const rowToRemove = document.getElementById('active-terminal-row');
-                if (rowToRemove) rowToRemove.remove();
-
-                // נוסיף את מה שהמשתמש כתב כהודעת צ'אט רגילה
-                chatHistory[currentLang].push({ role: 'user', text: text });
-                
-                if (currentKey !== 'about') {
-                    appendChatToCurrentView('user', text);
-                } else {
-                    renderFullChatHistory(); // מרנדר מחדש את הכל בצ'אט הראשי
-                }
-                
-                // אינדיקציית טעינה
-                const loadingId = 'loading-' + Date.now();
-                const loadingHtml = `<div id="${loadingId}" class="chat-msg ai" style="opacity:0.7">>> ...</div>`;
-                
-                const container = document.getElementById('inline-chat-container') || document.getElementById('chat-history') || output;
-                // במקרה של 'about', הפונקציה renderFullChatHistory כבר דואגת למיכל
-                // במקרים אחרים צריך לוודא לאיפה מכניסים
-                
-                if (currentKey !== 'about') {
-                    // אם אין מיכל צ'אט עדיין, ניצור אותו
-                    let chatCont = document.getElementById('inline-chat-container');
-                     if (!chatCont) {
-                        const sep = document.createElement('div'); sep.className = 'chat-separator'; output.appendChild(sep);
-                        chatCont = document.createElement('div'); chatCont.id = 'inline-chat-container'; output.appendChild(chatCont);
-                    }
-                    chatCont.innerHTML += loadingHtml;
-                } else {
-                     document.getElementById('chat-history').innerHTML += loadingHtml;
-                }
-                scrollToBottom();
-
-                try {
-                    const response = await callGemini(text);
-                    
-                    const loadingEl = document.getElementById(loadingId);
-                    if (loadingEl) loadingEl.remove();
-
-                    chatHistory[currentLang].push({ role: 'ai', text: response });
-
-                    if (currentKey !== 'about') {
-                        appendChatToCurrentView('ai', response);
-                    } else {
-                        renderFullChatHistory();
-                    }
-                } catch (err) {
-                    const loadingEl = document.getElementById(loadingId);
-                    if (loadingEl) loadingEl.remove();
-                    const errMsg = currentLang === 'he' ? "שגיאה." : "Error.";
-                    
-                    chatHistory[currentLang].push({ role: 'ai', text: errMsg });
-                    if (currentKey !== 'about') appendChatToCurrentView('ai', errMsg);
-                    else renderFullChatHistory();
-                }
-                
-                // בסוף התהליך - יצירת שורת פקודה חדשה
-                // (הערה: renderFullChatHistory לא קורא ל-addTerminalInput בעצמו, לכן נקרא כאן)
-                // אבל רגע, renderFullChatHistory נקרא גם בלחיצה על 'about' ושם כן קוראים ל-addTerminalInput?
-                // לא, run קורא ל-render, אבל ב-run יש הפרדה.
-                // כדי למנוע כפילויות, נוודא שמוסיפים רק אם לא קיים.
-                addTerminalInput();
-            }
-        }
-
-        // --- Chat Logic ---
-        function renderFullChatHistory() {
-            if (chatHistory[currentLang].length === 0) {
-                chatHistory[currentLang].push({ role: 'ai', text: resources[currentLang].welcome });
-            }
-
-            output.innerHTML = `
-            <div id="chat-interface" class="fade-in">
-                <div id="chat-history">
-                    ${chatHistory[currentLang].map(msg => 
-                        `<div class="chat-msg ${msg.role}">${msg.role === 'user' ? '>' : '>>'} <span style="white-space:pre-wrap">${msg.text}</span></div>`
-                    ).join('')}
-                </div>
-            </div>`;
-            
-            // בטאב הראשי תמיד נוסיף שורת קלט בסוף הרינדור
-            addTerminalInput(); 
-        }
-
-        function appendChatToCurrentView(role, text) {
-            let chatContainer = document.getElementById('inline-chat-container');
-            
-            if (!chatContainer) {
-                const separator = document.createElement('div');
-                separator.className = 'chat-separator';
-                output.appendChild(separator);
-
-                chatContainer = document.createElement('div');
-                chatContainer.id = 'inline-chat-container';
-                output.appendChild(chatContainer);
-            }
-
-            const prefix = role === 'user' ? '>' : '>>';
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `chat-msg ${role}`;
-            msgDiv.innerHTML = `${prefix} <span style="white-space:pre-wrap">${text}</span>`;
-            chatContainer.appendChild(msgDiv);
-        }
-
-        // --- כלים ---
-
-        function clearChat() {
-            chatHistory[currentLang] = [];
-            
-            if (currentKey === 'about') {
-                renderFullChatHistory();
-            } else {
-                const chatContainer = document.getElementById('inline-chat-container');
-                if (chatContainer) chatContainer.remove();
-                
-                const separator = document.querySelector('.chat-separator');
-                if (separator) separator.remove();
-                
-                // החזרת שורת הקלט הנקייה
-                addTerminalInput();
-            }
-        }
-
-        function copyContent() {
-            const textToCopy = output.innerText;
-            const textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    const copyBtn = document.querySelector('.tool-btn[onclick="copyContent()"]');
-                    const originalText = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '<span class="tool-icon">✅</span><span class="tool-text">Copied!</span>';
-                    copyBtn.style.color = '#fff';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = originalText;
-                        copyBtn.style.color = '';
-                    }, 1500);
-                }
-            } catch (err) {
-                console.error('Fallback copy failed', err);
-            }
-            document.body.removeChild(textArea);
-        }
-
-        function printContent() { window.print(); }
-        
-        function focusInput() {
-            if(activeInput) activeInput.focus();
-        }
-
-        // --- Gemini & Utils ---
-
-        async function callGemini(userPrompt) {
-            const langName = currentLang === 'he' ? 'Hebrew' : (currentLang === 'ru' ? 'Russian' : 'English');
-            const systemPrompt = `You are Alex Rivkin's portfolio AI assistant (Male persona). Role: Senior Product Designer. Reply succinctly in ${langName}. Important: When speaking Hebrew, always use masculine grammar (לשון זכר).`;
-
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: userPrompt }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] }
-                })
-            });
-
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
-        }
-
-        function scrollToBottom() {
-            terminalDiv.scrollTop = terminalDiv.scrollHeight;
-        }
-
-        function setLang(lang) {
-            currentLang = lang;
-            document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
             document.querySelectorAll('.lang-opt').forEach(el => el.classList.remove('active'));
-            document.getElementById(`lang-${lang}`).classList.add('active');
-            
-            document.getElementById('nav-about').innerText = resources[lang].nav.about;
-            document.getElementById('nav-projects').innerText = resources[lang].nav.projects;
-            document.getElementById('nav-articles').innerText = resources[lang].nav.articles;
-            document.getElementById('nav-cv').innerText = resources[lang].nav.cv;
-            
-            // עדכון כותרות
-            document.getElementById('header-title').innerText = resources[lang].title;
-            document.getElementById('header-subtitle').innerText = resources[lang].subtitle;
-            document.getElementById('clear-btn-text').innerText = resources[lang].clear;
+            document.getElementById('lang-' + l).classList.add('active');
 
-            run(currentKey);
+            navigateTo('about'); // איפוס
         }
 
-        // שלג
-        let snowInterval = null;
+        function clearLog() {
+            navigateTo('about');
+        }
+
+        // Widgets
+        let snowInt = null;
         function toggleSnow() {
-            const btn = document.querySelector('.tree-btn');
-            if (snowInterval) { clearInterval(snowInterval); snowInterval = null; btn.classList.remove('active'); document.querySelectorAll('.snowflake').forEach(el => el.remove()); }
-            else { btn.classList.add('active'); snowInterval = setInterval(() => {
-                const f = document.createElement('div'); f.className = 'snowflake'; f.innerText = Math.random() > 0.5 ? '*' : '.';
-                f.style.left = Math.random() * 100 + 'vw'; f.style.opacity = Math.random(); f.style.fontSize = (Math.random() * 15 + 10) + 'px'; f.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                document.body.appendChild(f); setTimeout(() => f.remove(), 5000);
+            const b = document.querySelector('.tree-btn');
+            if (snowInt) { clearInterval(snowInt); snowInt = null; b.classList.remove('active'); document.querySelectorAll('.snowflake').forEach(e=>e.remove()); }
+            else { b.classList.add('active'); snowInt = setInterval(() => {
+                const f = document.createElement('div'); f.className = 'snowflake'; f.innerText = Math.random()>.5?'*':'.';
+                f.style.left = Math.random()*100+'vw'; f.style.fontSize = (Math.random()*15+10)+'px'; f.style.animationDuration = (Math.random()*3+2)+'s';
+                document.body.appendChild(f); setTimeout(()=>f.remove(), 5000);
             }, 100); }
         }
 
-        // חנוכייה
         function toggleMenorah() {
-            const menorah = document.getElementById('menorah-display');
-            const btn = document.querySelector('.menorah-btn');
-            
-            if (menorah.classList.contains('visible')) {
-                menorah.classList.remove('visible');
-                btn.classList.remove('active');
-            } else {
-                menorah.classList.add('visible');
-                btn.classList.add('active');
-            }
+            const w = document.getElementById('menorah-display'); const b = document.querySelector('.menorah-btn');
+            if(w.classList.contains('visible')) { w.classList.remove('visible'); b.classList.remove('active'); }
+            else { w.classList.add('visible'); b.classList.add('active'); }
         }
+        function toggleCandle(el) { el.classList.toggle('lit'); }
 
-        function toggleCandle(candleEl) {
-            candleEl.classList.toggle('lit');
-        }
-
-        run('about');
+        // Start
+        navigateTo('about');
 
     </script>
 </body>
